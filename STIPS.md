@@ -1,17 +1,19 @@
 # STIP-[xx]
 *Using template v0.1*
 ## Abstract
-Should be a brief description of the problem, and a small explainer of why it's a problem. There should be no discussion of potential solutions in the Abstract. 
+Interacting with bridges is challenging and imposes a cost and time commitment on the user that is a sub-standard experience relative to traditional asset management
 ## Motivation
-This section should clearly answer the 4 big questions:  
-- What is this feature?
+- Feature
+An ERC4626 vault that can execute bridging and investments on the behalf of the user
+
 - Why is this feature necessary
-    - Ideally a lot of this is captured in a good PRD
+    - To make yield opportunities available to users on their prefered chain
 - Who is this feature for?
-    - Managers, issuers, arbers, app devs
-- When is this feature going to be used? (At any time? Or only at certain times?)
-- How is this feature intended to be used?
-    - This may also include potential products/use cases this feature enables
+    - Managers: create vaults that include a more diverse set of assets and strategies
+    - Investors: improved UI for allocating to opportunities beyond your prefered chain
+- When and how is this feature going to be used?
+    - any time a manager wants to abstract away cross chain interactions from their users
+
 
 If there are multiple user stories associated with this feature it may make sense to ask all of these questions in the context of each user story. Feel free to sub-divide this section however necessary.
 ## Background Information
@@ -19,6 +21,33 @@ This section should contain any relevant info required for understanding the pro
 - Previous work done on the topic
 - Discussion of any relevant parts of the Set system
 - Documentation on any external protocols to consider when designing the solution. Links are great but providing relevant interfaces AND a brief description of how the protocol works is a big plus, highlighting any nuances (ie in AAVE interest accrues by creating more aTokens vs Compound accrues by updating cToken to underlying exchange rate)
+
+### ERC4626
+Examples & Contracts:
+- [solmate](https://github.com/transmissions11/solmate/blob/main/src/mixins/ERC4626.sol)
+- [open zeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/extensions/ERC4626.sol)
+- simple implementation on [QuickNode](https://www.quicknode.com/guides/ethereum-development/smart-contracts/how-to-use-erc-4626-with-your-smart-contract#what-you-will-need)
+- Smart Contract Programmer [Vault Math](https://youtu.be/k7WNibJOBXE?si=kwVLuDNLKkWEQ1cc)
+
+Accounting:
+- **Deposit Asset**: Use wAVAX on source chain as deposit asset.
+- **Yield Asset**: Use sAVAX on destination chain as yield asset.
+- **Total Assets Calculation**: `totalAssets()` is defined in wAVAX according to the total of both and exchange rate between them.
+- **Fetching Timestamp**: Call `historicalExchangeRateTimestamps(0)` to get `_timestamp`.
+- **Getting Exchange Rate**: Call `historicalExchangeRateByTimestamps(_timestamp)` to get rate in wei.
+- **Handling Execution Data**:
+  - The challenge is obtaining execution data on swaps (slippage) and exchange rate back to the vault contracts on the destination chain to ensure the `totalAssets()` call is accurate.
+  - Use CCIP for this purpose.
+- **Keeper Role**:
+  - A keeper grabs the exchange rate and execution data from the swap and returns it to the destination chain using CCIP.
+  - Keeper on homechain executes a function to update `totalAssets()` based on this data.
+- **Redemption Process**:
+  - User shares on redeem are defined as their percentage of `totalSupply`.
+  - User initiates a redeem call.
+  - Calculate `user_withdrawal_perc = number of shares / totalSupply()`.
+  - Determine the amount to transfer out: `amount to transfer out = user_withdrawal_perc * totalAssets()`.
+
+
 ## Open Questions
 Pose any open questions you may still have about potential solutions here. We want to be sure that they have been resolved before moving ahead with talk about the implementation. This section should be living and breathing through out this process.
 - [ ] Question
