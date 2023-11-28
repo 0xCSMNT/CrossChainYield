@@ -15,9 +15,13 @@ An ERC4626 vault that can execute bridging and investments on the behalf of the 
     - any time a manager wants to abstract away cross chain interactions from their users
 
 
-_If there are multiple user stories associated with this feature it may make sense to ask all of these questions in the context of each user story. Feel free to sub-divide this section however necessary._
+### User Story
+Sandra has all of her funds on Base. She is a new DeFi user and just got a metamask account. She has heard about good yield on Avalanche AVAX, but is unsure about bridges and the idea of multiple wallets and chains.
+
+Yield Getter (bad name) is a vault that she can easily deposit collateral into on Base, and on the backend it handles all of the bridging for her. She deposits ETH on Base and receives a share token that represents her claim on Staked AVAX on Avalanche.
+
 ## Background Information
-This section should contain any relevant info required for understanding the problem at hand. This may include any of the following:
+_This section should contain any relevant info required for understanding the problem at hand. This may include any of the following:_
 _- Previous work done on the topic_
 _- Discussion of any relevant parts of the Set system_
 _- Documentation on any external protocols to consider when designing the solution._ 
@@ -25,9 +29,9 @@ _Links are great but providing relevant interfaces AND a brief description of ho
 
 ### ERC4626
 #### Examples & Contracts:
-- [solmate](https://github.com/transmissions11/solmate/blob/main/src/mixins/ERC4626.sol)
-- [open zeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/extensions/ERC4626.sol)
-- simple implementation on [QuickNode](https://www.quicknode.com/guides/ethereum-development/smart-contracts/how-to-use-erc-4626-with-your-smart-contract#what-you-will-need)
+- [Solmate](https://github.com/transmissions11/solmate/blob/main/src/mixins/ERC4626.sol)
+- [Open Zeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/extensions/ERC4626.sol)
+- A simple implementation on [QuickNode](https://www.quicknode.com/guides/ethereum-development/smart-contracts/how-to-use-erc-4626-with-your-smart-contract#what-you-will-need)
 - Smart Contract Programmer [Vault Math](https://youtu.be/k7WNibJOBXE?si=kwVLuDNLKkWEQ1cc)
 
 #### Accounting:
@@ -50,9 +54,22 @@ _Links are great but providing relevant interfaces AND a brief description of ho
 
 
 ## Open Questions
-Pose any open questions you may still have about potential solutions here. We want to be sure that they have been resolved before moving ahead with talk about the implementation. This section should be living and breathing through out this process.
+_Pose any open questions you may still have about potential solutions here. We want to be sure that they have been resolved before moving ahead with talk about the implementation. This section should be living and breathing through out this process._
+- [ ] What assets and what chain to use? Why?
+    - *Answer*
+- [ ] How can we use Li.Fi to execute the bridge and swap?
+    - *Answer*
+- [ ] Chainlink - what libraries & repos?
+    - *Answer*
+- [ ] Chainlink - CCIP how to?
+    - *Answer*
+- [ ] Chainlink - automation how to?
+    - *Answer*
 - [ ] Question
     - *Answer*
+- [ ] Question
+    - *Answer*
+
 ## Feasibility Analysis
 Provide potential solution(s) including the pros and cons of those solutions and who are the different stakeholders in each solution. A recommended solution should be chosen here.
 ## Timeline
