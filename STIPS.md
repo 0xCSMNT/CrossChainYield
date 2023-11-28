@@ -52,6 +52,14 @@ _Links are great but providing relevant interfaces AND a brief description of ho
   - Calculate `user_withdrawal_perc = number of shares / totalSupply()`.
   - Determine the amount to transfer out: `amount to transfer out = user_withdrawal_perc * totalAssets()`.
 
+### Chainlink Automation
+xxxx
+
+### Chainlink CCIP
+xxxx
+
+### Li.Fi Bridge
+xxxx
 
 ## Open Questions
 _Pose any open questions you may still have about potential solutions here. We want to be sure that they have been resolved before moving ahead with talk about the implementation. This section should be living and breathing through out this process._
