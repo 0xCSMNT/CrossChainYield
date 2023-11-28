@@ -6,30 +6,31 @@ Interacting with bridges is challenging and imposes a cost and time commitment o
 - Feature
 An ERC4626 vault that can execute bridging and investments on the behalf of the user
 
-- Why is this feature necessary
+- **Why is this feature necessary?**
     - To make yield opportunities available to users on their prefered chain
-- Who is this feature for?
+- **Who is this feature for?**
     - Managers: create vaults that include a more diverse set of assets and strategies
     - Investors: improved UI for allocating to opportunities beyond your prefered chain
-- When and how is this feature going to be used?
+- **When and how is this feature going to be used?**
     - any time a manager wants to abstract away cross chain interactions from their users
 
 
-If there are multiple user stories associated with this feature it may make sense to ask all of these questions in the context of each user story. Feel free to sub-divide this section however necessary.
+_If there are multiple user stories associated with this feature it may make sense to ask all of these questions in the context of each user story. Feel free to sub-divide this section however necessary._
 ## Background Information
 This section should contain any relevant info required for understanding the problem at hand. This may include any of the following:
-- Previous work done on the topic
-- Discussion of any relevant parts of the Set system
-- Documentation on any external protocols to consider when designing the solution. Links are great but providing relevant interfaces AND a brief description of how the protocol works is a big plus, highlighting any nuances (ie in AAVE interest accrues by creating more aTokens vs Compound accrues by updating cToken to underlying exchange rate)
+_- Previous work done on the topic_
+_- Discussion of any relevant parts of the Set system_
+_- Documentation on any external protocols to consider when designing the solution._ 
+_Links are great but providing relevant interfaces AND a brief description of how the protocol works is a big plus, highlighting any nuances (ie in AAVE interest accrues by creating more aTokens vs Compound accrues by updating cToken to underlying exchange rate)_
 
 ### ERC4626
-Examples & Contracts:
+#### Examples & Contracts:
 - [solmate](https://github.com/transmissions11/solmate/blob/main/src/mixins/ERC4626.sol)
 - [open zeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/extensions/ERC4626.sol)
 - simple implementation on [QuickNode](https://www.quicknode.com/guides/ethereum-development/smart-contracts/how-to-use-erc-4626-with-your-smart-contract#what-you-will-need)
 - Smart Contract Programmer [Vault Math](https://youtu.be/k7WNibJOBXE?si=kwVLuDNLKkWEQ1cc)
 
-Accounting:
+#### Accounting:
 - **Deposit Asset**: Use wAVAX on source chain as deposit asset.
 - **Yield Asset**: Use sAVAX on destination chain as yield asset.
 - **Total Assets Calculation**: `totalAssets()` is defined in wAVAX according to the total of both and exchange rate between them.
