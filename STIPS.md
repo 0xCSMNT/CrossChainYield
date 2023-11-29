@@ -58,8 +58,14 @@ xxxx
 ### Chainlink CCIP
 xxxx
 
-### Li.Fi Bridge
-Li.FI is a multichain bridge and DEX aggregator with support for most chains, bridges, and DEX aggregators as well as single DEXs. List of DEXs they support can be found [here](https://docs.li.fi/list-chains-bridges-dexs)
+### Li.Fi
+Li.FI is a multichain bridge and DEX aggregator with support for most chains, bridges, and DEX aggregators as well as single DEXs. List of DEXs they support can be found [here](https://docs.li.fi/list-chains-bridges-dexs). 
+
+* [LiFi Widget](https://docs.li.fi/integrate-li.fi-widget/li.fi-widget-overview) has a set of Prebuilt UI components that will help integrate cross-chain bridging and swapping experince. 
+
+* [LiFi APIs](https://docs.li.fi/li.fi-api/li.fi-api) can be used to transfer tokens, request supported chains and tokens, token information, and all possible connections. You can also request status of transactions via the API. 
+
+* [LiFi SDK](https://docs.li.fi/integrate-li.fi-js-sdk/install-li.fi-sdk) package allows access to Li.Fi API, and find the best cross chain routes on different bridges and exchanges. The routes can then be executed via the SDK. 
 
 ## Open Questions
 _Pose any open questions you may still have about potential solutions here. We want to be sure that they have been resolved before moving ahead with talk about the implementation. This section should be living and breathing through out this process._
@@ -79,7 +85,15 @@ _Pose any open questions you may still have about potential solutions here. We w
     - *Answer*
 
 ## Feasibility Analysis
-Provide potential solution(s) including the pros and cons of those solutions and who are the different stakeholders in each solution. A recommended solution should be chosen here.
+Provide potential solution(s) including the pros and cons of those solutions and who are the different stakeholders in each solution. A recommended solution should be chosen here. A combination of the below solutions will be used for accomplishing the goals of the project.
+
+### Solution 1 - Use Li.Fi to bridge, and native destination chain swap 
+### Solution 2 - Use Chainlink CCIP to send tokens and then use native destination chain swap 
+
+
+
+
+
 ## Timeline
 A proposed timeline for completion
 ## Checkpoint 1
