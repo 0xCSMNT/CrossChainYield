@@ -79,7 +79,7 @@ _Links are great but providing relevant interfaces AND a brief description of ho
 - **Open Question**:
     - How will the swap on the destination chain trigger the CCIP message to update the accounting?
 
-- **Idea**:
+- **Implementation Idea**:
     - If we can create our own CCIP BnM test tokens, we might not need to use a third-party bridge and can keep it all to onchain CL stack.
       - Could use the BnM token on Polygon Mumbai as the deposit asset.
       - Bridge it to Sepolia.
