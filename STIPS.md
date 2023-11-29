@@ -75,13 +75,13 @@ _Links are great but providing relevant interfaces AND a brief description of ho
   - **LnM**: These tokens are only minted on Ethereum Sepolia. On other testnet blockchains, the token representation is a wrapped/synthetic asset called clCCIP-LnM. When transferring these tokens from Ethereum Sepolia to another testnet, CCIP locks the CCIP-LnM tokens on the source chain and mints the wrapped representation clCCIP-LnM on the destination chain. Between non-Ethereum Sepolia chains, CCIP burns and mints the wrapped representation clCCIP-LnM.
 
 - **Open Question**:
-- How will the swap on the destination chain trigger the CCIP message to update the accounting?
+    - How will the swap on the destination chain trigger the CCIP message to update the accounting?
 
 - **Idea**:
-- If we can create our own CCIP BnM test tokens, we might not need to use a third-party bridge and can keep it all to onchain CL stack.
-  - Could use the BnM token on Polygon Mumbai as the deposit asset.
-  - Bridge it to Sepolia.
-  - Swap it to another ERC we pair against it on Uni V2 deployment there.
+    - If we can create our own CCIP BnM test tokens, we might not need to use a third-party bridge and can keep it all to onchain CL stack.
+      - Could use the BnM token on Polygon Mumbai as the deposit asset.
+      - Bridge it to Sepolia.
+      - Swap it to another ERC we pair against it on Uni V2 deployment there.
 
 ### Chainlink Functions
 - Call any API from a smart contract: Enables access to off-chain data and computation.
