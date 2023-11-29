@@ -136,8 +136,8 @@ Provide potential solution(s) including the pros and cons of those solutions and
 2. **Bridging Solution B** - Use Chainlink CCIP to send tokens and then use native destination chain swap 
 3. **Custody Solution A** - User Funds on Destination Chain sit in an EOA and cannot be redeemed (one way trip)
 4. **Custody Solution B** - User Funds on Destination Chain are in a seperate vault that users can withdraw from (much more complicated but possible with CCIP I think)
-
-#### Bridging Solution A using CL Functions and Li.Fi API
+5. **Locking Solution** - Vault is locked during bridging and swapping sequence to protect against attacks
+#### 1. Bridging Solution A using CL Functions and Li.Fi API
 - User deposits asset A to an ERC4626 Vault
 - Every 24 hours a Chainlink Function interacts with the LiFi API to RFQ a quote to bridge and swap
     - (this may require a chainlink automation keeper to trigger the call to the Function)
@@ -146,25 +146,25 @@ Provide potential solution(s) including the pros and cons of those solutions and
 -  This execution data is passed back to the home chain vault by CCIP
 -  This data is then used by a `updateAssets()` function that updates the accouting on the vault
 
-#### Bridging Solution B using CCIP
+#### 2. Bridging Solution B using CCIP
 - Similar to the above but must use `CCIP-BnM` test tokens as deposit asset in vault and requires us to deploy a UNI V2 Pool on Sepolia that pairs the `CCIP-BnM` token against a ERC20 that we deploy
 - User deposits token to Vault
 - Every 24 hours a CL keeper triggers a bridge and swap using CCIP
 - Call data for the swap is sent with the asset
 - Swap is executed on Uni pool
 
-#### Custody Solution A using a EOA or very simple smart contract
+#### 3. Custody Solution A using a EOA or very simple smart contract
 - We basically build the bare minimum required to hold the asset and allow the swap once it has been bridged
 - Pro: Easier to build and test, faster to deploy
 - Con: One way trip for users. They are never getting money back...
 
-#### Custody Solution B using another vault
+#### 4. Custody Solution B using another vault
 - We deploy another 4626 on the destination chain that accepts the bridged assets
 - When a user wishes to withdraw their money, they burn their shares on the home chain and this creates a CCIP message to the destination chain vault to mint shares for them to withdraw.
 - Pro: User can redeem their assets
 - Con: Harder to build, more places for accounting to mess up
 
-#### Locking & Security
+#### 5. Locking & Security
 - As an additional precaution we can create a way to lock the vault when the bridge and swap is being executed
 - For Example:
     - We lock the home chain vault (no deposits, withdrawals, mint, redeems etc) with the same CL keeper command that executes the bridge and swap
