@@ -3,19 +3,18 @@
 ## Abstract
 Interacting with bridges is challenging and imposes a cost and time commitment on the user that is a sub-standard experience relative to traditional asset management
 ## Motivation
-**Feature**
-- An ERC4626 vault that can execute bridging and investments on the behalf of the user
+### Feature
+- **Description**: An ERC4626 vault that can execute bridging and investments on behalf of the user.
 
-**Why is this feature necessary?**
+### Why is this feature necessary?
+- To make yield opportunities available to users on their preferred chain.
 
-    - To make yield opportunities available to users on their prefered chain
-**Who is this feature for?**
+### Who is this feature for?
+- **Managers**: Create vaults that include a more diverse set of assets and strategies.
+- **Investors**: Improved UI for allocating to opportunities beyond your preferred chain.
 
-    - Managers: create vaults that include a more diverse set of assets and strategies
-    - Investors: improved UI for allocating to opportunities beyond your prefered chain
-**When and how is this feature going to be used?**
-
-    - any time a manager wants to abstract away cross chain interactions from their users
+### When and how is this feature going to be used?
+- Used anytime a manager wants to abstract away cross-chain interactions from their users.
 
 ### User Story
 Sandra has all of her funds on Base. She is a new DeFi user and just got a metamask account. She has heard about good yield on Avalanche AVAX, but is unsure about bridges and the idea of multiple wallets and chains.
