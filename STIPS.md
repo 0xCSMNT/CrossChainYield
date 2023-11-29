@@ -59,7 +59,7 @@ xxxx
 xxxx
 
 ### Li.Fi Bridge
-xxxx
+Li.FI is a multichain bridge and DEX aggregator with support for most chains, bridges, and DEX aggregators as well as single DEXs. List of DEXs they support can be found [here](https://docs.li.fi/list-chains-bridges-dexs)
 
 ## Open Questions
 _Pose any open questions you may still have about potential solutions here. We want to be sure that they have been resolved before moving ahead with talk about the implementation. This section should be living and breathing through out this process._
