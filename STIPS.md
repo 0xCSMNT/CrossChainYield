@@ -131,10 +131,11 @@ _Pose any open questions you may still have about potential solutions here. We w
 ## Feasibility Analysis
 Provide potential solution(s) including the pros and cons of those solutions and who are the different stakeholders in each solution. A recommended solution should be chosen here. A combination of the below solutions will be used for accomplishing the goals of the project.
 
-### Bridging Solution 1 - Use Li.Fi to bridge, and native destination chain swap 
-### Bridging Solution 2 - Use Chainlink CCIP to send tokens and then use native destination chain swap 
-### Custody Solution A - User Funds on Destination Chain sit in an EOA and cannot be redeemed (one way trip)
-### Custody Solution B - User Funds on Destination Chain are in a seperate vault that users can withdraw from (much more complicated but possible with CCIP I think)
+### Options 
+1. **Bridging Solution A** - Use Li.Fi to bridge, and native destination chain swap 
+2. **Bridging Solution B** - Use Chainlink CCIP to send tokens and then use native destination chain swap 
+3. **Custody Solution A** - User Funds on Destination Chain sit in an EOA and cannot be redeemed (one way trip)
+4. **Custody Solution B** - User Funds on Destination Chain are in a seperate vault that users can withdraw from (much more complicated but possible with CCIP I think)
 
 #### Bridging Solution 1 using CL Functions and Li.Fi API
 - User deposits asset A to an ERC4626 Vault
@@ -171,6 +172,7 @@ Provide potential solution(s) including the pros and cons of those solutions and
     
 ## Timeline
 A proposed timeline for completion
+
 ## Checkpoint 1
 Before more in depth design of the contract flows lets make sure that all the work done to this point has been exhaustive. It should be clear what we're doing, why, and for who. All necessary information on external protocols should be gathered and potential solutions considered. At this point we should be in alignment with product on the non-technical requirements for this feature. It is up to the reviewer to determine whether we move onto the next step.
 
