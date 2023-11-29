@@ -7,11 +7,14 @@ Interacting with bridges is challenging and imposes a cost and time commitment o
 - An ERC4626 vault that can execute bridging and investments on the behalf of the user
 
 **Why is this feature necessary?**
+
     - To make yield opportunities available to users on their prefered chain
 **Who is this feature for?**
+
     - Managers: create vaults that include a more diverse set of assets and strategies
     - Investors: improved UI for allocating to opportunities beyond your prefered chain
 **When and how is this feature going to be used?**
+
     - any time a manager wants to abstract away cross chain interactions from their users
 
 ### User Story
