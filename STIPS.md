@@ -1,4 +1,4 @@
-# STIP-[xx]
+# Spec Doc for CL Vault
 *Using template v0.1*
 ## Abstract
 Interacting with bridges is challenging and imposes a cost and time commitment on the user that is a sub-standard experience relative to traditional asset management
@@ -13,7 +13,6 @@ An ERC4626 vault that can execute bridging and investments on the behalf of the 
     - Investors: improved UI for allocating to opportunities beyond your prefered chain
 - **When and how is this feature going to be used?**
     - any time a manager wants to abstract away cross chain interactions from their users
-
 
 ### User Story
 Sandra has all of her funds on Base. She is a new DeFi user and just got a metamask account. She has heard about good yield on Avalanche AVAX, but is unsure about bridges and the idea of multiple wallets and chains.
@@ -53,10 +52,43 @@ _Links are great but providing relevant interfaces AND a brief description of ho
   - Determine the amount to transfer out: `amount to transfer out = user_withdrawal_perc * totalAssets()`.
 
 ### Chainlink Automation
-xxxx
+- **Getting Started**: [Guide](https://docs.chain.link/chainlink-automation/overview/getting-started)
+- **Better Guide**: [Time-based upkeeps](https://docs.chain.link/quickstarts/time-based-upkeep)
+  - Time-based upkeeps are smart contracts set up using Chainlink Automation
+      - Allow the automatic execution of a smart contract function on a custom schedule
+      - Similar to cron jobs
+      - Can be used to trigger smart contract functions.
+  - Register a new upkeep on [automation.chain.link](automation.chain.link).
+  - Use a cron expression to set the time interval. For example, `0 0 * * *` runs at midnight every 24 hours.
+  - Consider setting upkeep to call some bridge function on the vault smart contract.
+- **Custom Logic**: 
+  - Import the right Chainlink libraries to set custom logic within your smart contract.
+  - For Example, topping up a contract when the balance falls too low
+  - Guide on Chainlink keeper: [CL Keeper - Guide](https://docs.chain.link/chainlink-automation/guides/compatible-contracts)
 
 ### Chainlink CCIP
-xxxx
+- Install Foundry Chainlink Toolkit: `forge install smartcontractkit/foundry-chainlink-toolkit`
+- Supported [Testnets](https://docs.chain.link/ccip/supported-networks/testnet)
+- **Uniswap V2 [Deployment](https://sepolia.etherscan.io/address/0xC532a74256D3Db42D0Bf7a0400fEFDbad7694008#code)** on Sepolia
+- **[CCIP Test Tokens](https://docs.chain.link/ccip/test-tokens#mint-tokens-in-the-documentation)**:
+  - **BnM**: These tokens are minted on each testnet. When transferring these tokens between testnet blockchains, CCIP burns the tokens on the source chain and mints them on the destination chain.
+  - **LnM**: These tokens are only minted on Ethereum Sepolia. On other testnet blockchains, the token representation is a wrapped/synthetic asset called clCCIP-LnM. When transferring these tokens from Ethereum Sepolia to another testnet, CCIP locks the CCIP-LnM tokens on the source chain and mints the wrapped representation clCCIP-LnM on the destination chain. Between non-Ethereum Sepolia chains, CCIP burns and mints the wrapped representation clCCIP-LnM.
+
+- **Open Question**:
+- How will the swap on the destination chain trigger the CCIP message to update the accounting?
+
+- **Idea**:
+- If we can create our own CCIP BnM test tokens, we might not need to use a third-party bridge and can keep it all to onchain CL stack.
+  - Could use the BnM token on Polygon Mumbai as the deposit asset.
+  - Bridge it to Sepolia.
+  - Swap it to another ERC we pair against it on Uni V2 deployment there.
+
+### Chainlink Functions
+- Call any API from a smart contract: Enables access to off-chain data and computation.
+  - [Overview](https://chain.link/functions) and [docs](https://docs.chain.link/chainlink-functions)
+  - Good [Video](https://youtu.be/I-g1aaZ3_x4?si=gKw8ccZS5__Kj0mD0 to get up to speed
+  - Could be useful for interacting with **Li.Fi API**
+
 
 ### Li.Fi
 Li.FI is a multichain bridge and DEX aggregator with support for most chains, bridges, and DEX aggregators as well as single DEXs. List of DEXs they support can be found [here](https://docs.li.fi/list-chains-bridges-dexs). 
@@ -65,35 +97,76 @@ Li.FI is a multichain bridge and DEX aggregator with support for most chains, br
 
 * [LiFi APIs](https://docs.li.fi/li.fi-api/li.fi-api) can be used to transfer tokens, request supported chains and tokens, token information, and all possible connections. You can also request status of transactions via the API. 
 
-* [LiFi SDK](https://docs.li.fi/integrate-li.fi-js-sdk/install-li.fi-sdk) package allows access to Li.Fi API, and find the best cross chain routes on different bridges and exchanges. The routes can then be executed via the SDK. 
+* [LiFi SDK](https://docs.li.fi/integrate-li.fi-js-sdk/install-li.fi-sdk) package allows access to Li.Fi API, and find the best cross chain routes on different bridges and exchanges. The routes can then be executed via the SDK.
+
+- **Integration and Functionality Questions**:
+  - How will the bridge talk to the smart contract?
+  - Noting the challenge that the li.fi API/SDK uses web 2 to get quotes and confirm transactions.
+  - Chainlink Automation triggers smart contract functions.
+  - Consideration: Maybe use Chainlink Functions (a different CL product) for off-chain logic and interacting with Li.Fi?
+
+- **Li.Fi Testnet Deployments**:
+  - Ethereum Goerli
+  - Polygon Mumbai
 
 ## Open Questions
 _Pose any open questions you may still have about potential solutions here. We want to be sure that they have been resolved before moving ahead with talk about the implementation. This section should be living and breathing through out this process._
 - [ ] What assets and what chain to use? Why?
     - *Answer*
 - [ ] How can we use Li.Fi to execute the bridge and swap?
-    - *Answer*
+    - *With a webapp or with a Chainlink Function*
 - [ ] Chainlink - what libraries & repos?
     - *Answer*
 - [ ] Chainlink - CCIP how to?
     - *Answer*
 - [ ] Chainlink - automation how to?
     - *Answer*
-- [ ] Question
-    - *Answer*
+- [ ] What testnet deployments are ruled out by picking specific technologies
+    - *For example: Li.Fi is not on Sepolia*
 - [ ] Question
     - *Answer*
 
 ## Feasibility Analysis
 Provide potential solution(s) including the pros and cons of those solutions and who are the different stakeholders in each solution. A recommended solution should be chosen here. A combination of the below solutions will be used for accomplishing the goals of the project.
 
-### Solution 1 - Use Li.Fi to bridge, and native destination chain swap 
-### Solution 2 - Use Chainlink CCIP to send tokens and then use native destination chain swap 
+### Bridging Solution 1 - Use Li.Fi to bridge, and native destination chain swap 
+### Bridging Solution 2 - Use Chainlink CCIP to send tokens and then use native destination chain swap 
+### Custody Solution A - User Funds on Destination Chain sit in an EOA and cannot be redeemed (one way trip)
+### Custody Solution B - User Funds on Destination Chain are in a seperate vault that users can withdraw from (much more complicated but possible with CCIP I think)
 
+#### Bridging Solution 1 using CL Functions and Li.Fi API
+- User deposits asset A to an ERC4626 Vault
+- Every 24 hours a Chainlink Function interacts with the LiFi API to RFQ a quote to bridge and swap
+    - (this may require a chainlink automation keeper to trigger the call to the Function)
+-  The data from quote is passed to a `bridge assets()` function on the vault smart contract as argument and bridge and swap is executed
+-  On the destination chain a chainlink keeper watches for the new asset and grabs the execution data for the swap - slippage etc
+-  This execution data is passed back to the home chain vault by CCIP
+-  This data is then used by a `updateAssets()` function that updates the accouting on the vault
 
+#### Bridging Solution 2 using CCIP
+- Similar to the above but must use `CCIP-BnM` test tokens as deposit asset in vault and requires us to deploy a UNI V2 Pool on Sepolia that pairs the `CCIP-BnM` token against a ERC20 that we deploy
+- User deposits token to Vault
+- Every 24 hours a CL keeper triggers a bridge and swap using CCIP
+- Call data for the swap is sent with the asset
+- Swap is executed on Uni pool
 
+#### Custody Solution 1 using a EOA or very simple smart contract
+- We basically build the bare minimum required to hold the asset and allow the swap once it has been bridged
+- Pro: Easier to build and test, faster to deploy
+- Con: One way trip for users. They are never getting money back...
 
+#### Custody Solution 2 using another vault
+- We deploy another 4626 on the destination chain that accepts the bridged assets
+- When a user wishes to withdraw their money, they burn their shares on the home chain and this creates a CCIP message to the destination chain vault to mint shares for them to withdraw.
+- Pro: User can redeem their assets
+- Con: Harder to build, more places for accounting to mess up
 
+#### Locking & Security
+- As an additional precaution we can create a way to lock the vault when the bridge and swap is being executed
+- For Example:
+    - We lock the home chain vault (no deposits, withdrawals, mint, redeems etc) with the same CL keeper command that executes the bridge and swap
+    - Once the swap has been executed on the destination chain, we can send a call back to the source chain to unlock the vault
+    
 ## Timeline
 A proposed timeline for completion
 ## Checkpoint 1
