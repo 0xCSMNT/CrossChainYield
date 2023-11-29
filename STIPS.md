@@ -88,7 +88,7 @@ _Links are great but providing relevant interfaces AND a brief description of ho
 ### Chainlink Functions
 - Call any API from a smart contract: Enables access to off-chain data and computation.
   - [Overview](https://chain.link/functions) and [docs](https://docs.chain.link/chainlink-functions)
-  - Good [Video](https://youtu.be/I-g1aaZ3_x4?si=gKw8ccZS5__Kj0mD0 to get up to speed
+  - Good [Video](https://youtu.be/I-g1aaZ3_x4?si=gKw8ccZS5__Kj0mD0) to get up to speed
   - Could be useful for interacting with **Li.Fi API**
 
 
@@ -136,7 +136,8 @@ Provide potential solution(s) including the pros and cons of those solutions and
 2. **Bridging Solution B** - Use Chainlink CCIP to send tokens and then use native destination chain swap 
 3. **Custody Solution A** - User Funds on Destination Chain sit in an EOA and cannot be redeemed (one way trip)
 4. **Custody Solution B** - User Funds on Destination Chain are in a seperate vault that users can withdraw from (much more complicated but possible with CCIP I think)
-5. **Locking Solution** - Vault is locked during bridging and swapping sequence to protect against attacks
+5. **Locking Option** - Vault is locked during bridging and swapping sequence to protect against attacks
+
 #### 1. Bridging Solution A using CL Functions and Li.Fi API
 - User deposits asset A to an ERC4626 Vault
 - Every 24 hours a Chainlink Function interacts with the LiFi API to RFQ a quote to bridge and swap
