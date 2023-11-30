@@ -86,6 +86,7 @@ _Links are great but providing relevant interfaces AND a brief description of ho
       - Could use the BnM token on Polygon Mumbai as the deposit asset.
       - Bridge it to Sepolia.
       - Swap it to another ERC we pair against it on Uni V2 deployment there.
+            - Do we want to use BnM instead of LnM? In most practical use cases, it would be a LnM token, like bridges work today. Doesn't matter in the scope of this project, though. 
 
 ### Chainlink Functions
 - Call any API from a smart contract: Enables access to off-chain data and computation.
