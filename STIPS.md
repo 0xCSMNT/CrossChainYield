@@ -81,7 +81,7 @@ _Links are great but providing relevant interfaces AND a brief description of ho
       - Does a swap need to update anything? The whole purpose of accounting is to issue the right amount of shares, so if a new user deposits on the source chain after the above swap, the NAV of the vault will be calculated based on the post swap asset balances. <em>Our goal is to be able to get this value across to the source chain using a function call on the source chain.<em> 
     - Should the origin vault also be the sender contract and the destination vault be the reciever contract?
     - OR Should the token transfers be routed via a protocol controlled transfer contract?
-
+    - Also can deposit + bridging be atomic ie in the same transaction? What is the expected latency? 
 - **Implementation Idea**:
     - If we can create our own CCIP BnM test tokens, we might not need to use a third-party bridge and can keep it all to onchain CL stack.
       - Could use the BnM token on Polygon Mumbai as the deposit asset.
