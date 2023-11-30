@@ -195,18 +195,17 @@ Before we spec out the contract(s) in depth we want to make sure that we are ali
 
 Reviewer: []
 ## Specification
-### [Contract Name]
+### [Vault Contract]
 #### Inheritance
-- List inherited contracts
+- ERC20, ERC4626
 #### Structs
 | Type 	| Name 	| Description 	|
 |------	|------	|-------------	|
-|address|manager|Address of the manager|
-|uint256|iterations|Number of times manager has called contract|  
+|address|manager|Address of the manager| 
 #### Constants
 | Type 	| Name 	| Description 	| Value 	|
 |------	|------	|-------------	|-------	|
-|uint256|ONE    | The number one| 1       	|
+|address|bridgeContract    | Contract responsible for receieving and send tokens across chains| 1       	|
 #### Public Variables
 | Type 	| Name 	| Description 	|
 |------	|------	|-------------	|
@@ -214,9 +213,11 @@ Reviewer: []
 #### Functions
 | Name  | Caller  | Description 	|
 |------	|------	|-------------	|
-|startRebalance|Manager|Set rebalance parameters|
-|rebalance|Trader|Rebalance SetToken|
-|ripcord|EOA|Recenter leverage ratio|
+|deposit|User|Accept funds from user|
+|_mint|Internal|Mint shares to the User|
+|withdraw|User|Withdraw funds|
+|_burn|Internal|Burn User shares|
+
 #### Modifiers
 > onlyManager(SetToken _setToken)
 #### Functions
