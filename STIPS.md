@@ -154,13 +154,13 @@ _Pose any open questions you may still have about potential solutions here. We w
 Provide potential solution(s) including the pros and cons of those solutions and who are the different stakeholders in each solution. A recommended solution should be chosen here. A combination of the below solutions will be used for accomplishing the goals of the project.
 
 ### Options 
-1. **Bridging Solution A** - Use Li.Fi to bridge, and native destination chain swap 
+~~1. **Bridging Solution A** - Use Li.Fi to bridge, and native destination chain swap~~
 2. **Bridging Solution B** - Use Chainlink CCIP to send tokens and then use native destination chain swap 
-3. **Custody Solution A** - User Funds on Destination Chain sit in an EOA and cannot be redeemed (one way trip)
+~~3. **Custody Solution A** - User Funds on Destination Chain sit in an EOA and cannot be redeemed (one way trip)~~
 4. **Custody Solution B** - User Funds on Destination Chain are in a seperate vault that users can withdraw from (much more complicated but possible with CCIP I think)
 5. **Locking Option** - Vault is locked during bridging and swapping sequence to protect against attacks
 
-#### 1. Bridging Solution A using CL Functions and Li.Fi API
+~~#### 1. Bridging Solution A using CL Functions and Li.Fi API~~
 - User deposits asset A to an ERC4626 Vault
 - Every 24 hours a Chainlink Function interacts with the LiFi API to RFQ a quote to bridge and swap
     - (this may require a chainlink automation keeper to trigger the call to the Function)
@@ -176,7 +176,7 @@ Provide potential solution(s) including the pros and cons of those solutions and
 - Call data for the swap is sent with the asset
 - Swap is executed on Uni pool
 
-#### 3. Custody Solution A using a EOA or very simple smart contract
+~~#### 3. Custody Solution A using a EOA or very simple smart contract~~
 - We basically build the bare minimum required to hold the asset and allow the swap once it has been bridged
 - Pro: Easier to build and test, faster to deploy
 - Con: One way trip for users. They are never getting money back...
@@ -197,14 +197,52 @@ Provide potential solution(s) including the pros and cons of those solutions and
 A proposed timeline for completion
 
 ## Checkpoint 1
-Before more in depth design of the contract flows lets make sure that all the work done to this point has been exhaustive. It should be clear what we're doing, why, and for who. All necessary information on external protocols should be gathered and potential solutions considered. At this point we should be in alignment with product on the non-technical requirements for this feature. It is up to the reviewer to determine whether we move onto the next step.
+_Before more in depth design of the contract flows lets make sure that all the work done to this point has been exhaustive. It should be clear what we're doing, why, and for who. All necessary information on external protocols should be gathered and potential solutions considered. At this point we should be in alignment with product on the non-technical requirements for this feature. It is up to the reviewer to determine whether we move onto the next step._
 
 **Reviewer**:
 
 ## Proposed Architecture Changes
-A diagram would be helpful here to see where new feature slot into the system. Additionally a brief description of any new contracts is helpful.
+_A diagram would be helpful here to see where new feature slot into the system. Additionally a brief description of any new contracts is helpful._
+### Goal 
+_Describe the actual solution you decided upon_
+
+CCIP Vault will be able to deposit and withdraw capital from a destination chain and handle accounting on source chain.
+
+### Design 
+There could be two contracts in the protocol/vault architecture. 
+
 ## Requirements
-These should be a distillation of the previous two sections taking into account the decided upon high-level implementation. Each flow should have high level requirements taking into account the needs of participants in the flow (users, managers, market makers, app devs, etc) 
+_These should be a distillation of the previous two sections taking into account the decided upon high-level implementation. Each flow should have high level requirements taking into account the needs of participants in the flow (users, managers, market makers, app devs, etc)_
+
+### Source Vault
+
+#### Expected Functionality
+1. Accept user funds via a `deposit()` function.
+2. Issue shares to user via `mint()`.
+3. To issue shares, we need a method to calculate total value of the destination vault + source vault (if funds ever sit idle in the source vault).
+4. We need the ERC20 method which returns `totalSupply`.
+5. We need a `transfer()` method (or could keep it non-transferrable).
+6. We need a method which can convert users LP token value to underlying asset value.
+7. We need a method to invoke a CCIP transfer via relevant router.
+8. We need to be able to check the status of the deposit on the destination chain.
+9. A `withdraw()` function to accept user withdraw request.
+10. A mapping to track if users withdraw request has been fulfilled.
+11. A method to burn user shares.
+12. A method to `lockVault()`
+13. A method to `unlockVault()`
+
+### Destination Vault
+
+#### Expected Functionality
+1. Accept a CCIP transfer.
+2. Swap funds to target yield asset.
+3. Swap funds back to base asset.
+4. Return a value of assets in the vault in terms of base asset.
+5. Accept a withdrawal request from the source vault.
+6. Calls `swap()`.
+7. Send a CCIP programmable token transfer as well as the message ID of the initially received message.
+8. Swap funds based on the amount of requested funds.
+
 ## User Flows
 - Highlight *each* external flow enabled by this feature. It's helpful to use diagrams (add them to the `assets` folder). Examples can be very helpful, make sure to highlight *who* is initiating this flow, *when* and *why*. A reviewer should be able to pick out what requirements are being covered by this flow.
 ## Checkpoint 2
