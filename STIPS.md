@@ -86,6 +86,13 @@ EVM2AnyMessage - use this solidity struct to build the CCIP message
 | feeToken     | address                    | Address of feeToken. Set address(0) to pay in native gas tokens such as ETH on Ethereum or MATIC on Polygon. |
 | extraArgs    | bytes                      | Users fill in the EVMExtraArgsV1 struct then encode it to bytes using the _argsToBytes function.  |
 
+EVMExtraArgsV1
+
+| Name     | Type    | Description                                                                                              |
+|----------|---------|----------------------------------------------------------------------------------------------------------|
+| gasLimit | uint256 | Specifies the maximum amount of gas CCIP can consume to execute ccipReceive() on the contract located on the destination blockchain. Read Setting gasLimit for more details. |
+| strict   | bool    | Used for strict sequencing. Read Sequencing for more details.                                            |
+
 
 - **Open Question**:
     - How will the swap on the destination chain trigger the CCIP message to update the accounting? --
