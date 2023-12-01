@@ -564,15 +564,15 @@ Reference
 
 ### Deposits & Withdrawals Transaction Flows
 
-### Deposits & Daily Bridging 1
+#### Deposits & Daily Bridging 1
 
 ![Deposits_1.jpg](assets/4.png)
 
-### Deposits & Daily Bridging 2
+#### Deposits & Daily Bridging 2
 
 ![Deposits_2.jpg](assets/3.png)
 
-### Withdrawals
+#### Withdrawals
 
 ## User Flows
 - Highlight *each* external flow enabled by this feature. It's helpful to use diagrams (add them to the `assets` folder). Examples can be very helpful, make sure to highlight *who* is initiating this flow, *when* and *why*. A reviewer should be able to pick out what requirements are being covered by this flow.
