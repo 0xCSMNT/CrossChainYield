@@ -75,6 +75,17 @@ _Links are great but providing relevant interfaces AND a brief description of ho
 - **[CCIP Test Tokens](https://docs.chain.link/ccip/test-tokens#mint-tokens-in-the-documentation)**:
   - **BnM**: These tokens are minted on each testnet. When transferring these tokens between testnet blockchains, CCIP burns the tokens on the source chain and mints them on the destination chain.
   - **LnM**: These tokens are only minted on Ethereum Sepolia. On other testnet blockchains, the token representation is a wrapped/synthetic asset called clCCIP-LnM. When transferring these tokens from Ethereum Sepolia to another testnet, CCIP locks the CCIP-LnM tokens on the source chain and mints the wrapped representation clCCIP-LnM on the destination chain. Between non-Ethereum Sepolia chains, CCIP burns and mints the wrapped representation clCCIP-LnM.
+ 
+EVM2AnyMessage - use this solidity struct to build the CCIP message
+
+| Name         | Type                       | Description                                                                                       |
+|--------------|----------------------------|---------------------------------------------------------------------------------------------------|
+| receiver     | bytes                      | Receiver address. Use abi.encode(sender) to encode the address to bytes.                          |
+| data         | bytes                      | Payload sent within the CCIP message.                                                             |
+| tokenAmounts | Client.EVMTokenAmount[]    | Tokens and their amounts in the source chain representation.                                      |
+| feeToken     | address                    | Address of feeToken. Set address(0) to pay in native gas tokens such as ETH on Ethereum or MATIC on Polygon. |
+| extraArgs    | bytes                      | Users fill in the EVMExtraArgsV1 struct then encode it to bytes using the _argsToBytes function.  |
+
 
 - **Open Question**:
     - How will the swap on the destination chain trigger the CCIP message to update the accounting? --
