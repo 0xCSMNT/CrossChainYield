@@ -6,8 +6,6 @@ Interacting with bridges is challenging and imposes a cost and time commitment o
 ### Feature
 - **Description**: An ERC4626 vault that can execute bridging and investments on behalf of the user.
 
-<img src="assets/deposits_1.jpg" width="300">
-
 ### Why is this feature necessary?
 - To make yield opportunities available to users on their preferred chain.
 
@@ -573,6 +571,8 @@ Reference
 ### Deposits & Daily Bridging 2
 
 ![Deposits_2.jpg](assets/Deposits_2.jpg)
+
+### Withdrawals
 
 ## User Flows
 - Highlight *each* external flow enabled by this feature. It's helpful to use diagrams (add them to the `assets` folder). Examples can be very helpful, make sure to highlight *who* is initiating this flow, *when* and *why*. A reviewer should be able to pick out what requirements are being covered by this flow.
