@@ -243,6 +243,21 @@ _These should be a distillation of the previous two sections taking into account
 7. Send a CCIP programmable token transfer as well as the message ID of the initially received message.
 8. Swap funds based on the amount of requested funds.
 
+### CCIP/Messages/Transaction Flow/Functionality Mirror
+
+| Action                                              | Source Action                                                      | Destination action                                     |
+|-----------------------------------------------------|--------------------------------------------------------------------|--------------------------------------------------------|
+| User deposits                                       | Deposit()                                                          | No action                                              |
+| Vault mints shares                                  | mint()                                                             | No action                                              |
+| totalAssets()                                       | Check for pre-updated value of destination assets, calculate present value in [base asset via Chainlink oracle](https://github.com/smartcontractkit/ccip-defi-lending/blob/c12632b6f1b0954a081e8c658b64ebbd81c4d980/contracts/Protocol.sol#L107) | Should pre-update values after each deposit in the destination asset. Default would be zero |
+| After mint(), funds should be sent to destination   | A [sendFunds()](https://github.com/smartcontractkit/ccip-defi-lending/blob/c12632b6f1b0954a081e8c658b64ebbd81c4d980/contracts/Sender.sol#L71C17-L71C17) function constructs the message, initializes the router, sends the message, and returns the messageId. | *A _ccipRecieve function identifies the message and uses the token amount to call a swap() function |
+| User requests withdraw                              | Withdraw()                                                         | No action                                              |
+| Vault burns the shares, requests for funds from destination | Vault calculated base asset to be requested based on oracle value, burns the shares, records the value of base asset to be requests, user address, [requests for funds via CCIP](https://github.com/smartcontractkit/ccip-liquidation-protector/blob/f0e71131a6171ffe04deeec653b5d5efe9f3713f/contracts/monitors/MonitorCompoundV3.sol#L82) | Destination vault then checks for the amount needed, [swaps to the base token, and sends a CCIP token transfer](https://github.com/smartcontractkit/ccip-liquidation-protector/blob/f0e71131a6171ffe04deeec653b5d5efe9f3713f/contracts/LPSC.sol#L58C20-L58C20) |
+| Vault receives funds, completes withdrawal request  | __ccipreceive and then return funds to user                        | No action                                              |
+| transfer()                                          | Basic transfer of shares from one user another on source chain     | No action                                              |
+
+*As the destination vault can receive both, deposit and withdraw messages, we need to find a way to separate those in the data we send in a message from the source. Maybe we can use a case statement on the destination side to distinguish between these messages. 
+
 ## User Flows
 - Highlight *each* external flow enabled by this feature. It's helpful to use diagrams (add them to the `assets` folder). Examples can be very helpful, make sure to highlight *who* is initiating this flow, *when* and *why*. A reviewer should be able to pick out what requirements are being covered by this flow.
 ## Checkpoint 2
