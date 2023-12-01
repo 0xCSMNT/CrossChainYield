@@ -562,7 +562,7 @@ swapToBase
 Reference
 [ccip-liquidation-protector](https://github.com/smartcontractkit/ccip-liquidation-protector/tree/f0e71131a6171ffe04deeec653b5d5efe9f3713f)
 
-![deposits_1](assets/deposits_1.jpg)
+![deposits_1](assets/Deposits_1.jpg)
 
 ## User Flows
 - Highlight *each* external flow enabled by this feature. It's helpful to use diagrams (add them to the `assets` folder). Examples can be very helpful, make sure to highlight *who* is initiating this flow, *when* and *why*. A reviewer should be able to pick out what requirements are being covered by this flow.
