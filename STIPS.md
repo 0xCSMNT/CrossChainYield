@@ -566,11 +566,11 @@ Reference
 
 ### Deposits & Daily Bridging 1
 
-![Deposits_1.jpg](assets/3.png)
+![Deposits_1.jpg](assets/4.png)
 
 ### Deposits & Daily Bridging 2
 
-![Deposits_2.jpg](assets/4.png)
+![Deposits_2.jpg](assets/3.png)
 
 ### Withdrawals
 
