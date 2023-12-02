@@ -65,13 +65,13 @@ ERC4626 is the standardized vault contract used for accounting and managing user
   - For Example, topping up a contract when the balance falls too low
   - Guide on Chainlink keeper: [CL Keeper - Guide](https://docs.chain.link/chainlink-automation/guides/compatible-contracts)
 - **Log-based Automation**:
-    Chainlink Automation offers a feature called Log Trigger Upkeep, which allows you to monitor specific events like deposits on a vault and trigger actions based on them. This feature is useful for automating responses to on-chain events without continuous manual monitoring.
+    - Chainlink Automation offers a feature called Log Trigger Upkeep, which allows you to monitor specific events like deposits on a vault and trigger actions based on them. This feature is useful for automating responses to on-chain events without continuous manual monitoring.
 
-    To use this, you need to implement the ILogAutomation interface in your smart contract. This involves defining functions like checkLog and performUpkeep. checkLog is used to parse log data and check if an on-chain action is needed, while performUpkeep executes the necessary on-chain actions.
+    - To use this, you need to implement the ILogAutomation interface in your smart contract. This involves defining functions like checkLog and performUpkeep. checkLog is used to parse log data and check if an on-chain action is needed, while performUpkeep executes the necessary on-chain actions.
 
-    You can deploy a contract with this interface, such as CountWithLog, which uses events to trigger actions. Then, you can register your contract with Chainlink Automation, specifying the details and conditions under which your contract should react to logs. Once set up, Chainlink Automation will monitor the logs and execute your contract's functions when the specified conditions are met.
+    - You can deploy a contract with this interface, such as CountWithLog, which uses events to trigger actions. Then, you can register your contract with Chainlink Automation, specifying the details and conditions under which your contract should react to logs. Once set up, Chainlink Automation will monitor the logs and execute your contract's functions when the specified conditions are met.
 
-    For detailed steps and examples, you can refer to the specific Chainlink documentation or guides available online. This feature streamlines processes for smart contracts, making them more responsive and efficient.
+    - For detailed steps and examples, you can refer to the specific Chainlink documentation or guides available online. This feature streamlines processes for smart contracts, making them more responsive and efficient.
 
 ### Chainlink CCIP
 - Install Foundry Chainlink Toolkit: `forge install smartcontractkit/foundry-chainlink-toolkit`
