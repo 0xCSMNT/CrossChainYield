@@ -147,7 +147,7 @@ struct EVMExtraArgsV1 {
 | gasLimit | uint256 | Specifies the maximum amount of gas CCIP can consume to execute ccipReceive() on the contract located on the destination blockchain. Read Setting gasLimit for more details. |
 | strict   | bool    | Used for strict sequencing. Read Sequencing for more details.                                            |
 
-## [Examples]([url](https://github.com/smartcontractkit/ccip-starter-kit-foundry/tree/main/src)) of Simple Contracts in Foundry
+#### [Examples]([url](https://github.com/smartcontractkit/ccip-starter-kit-foundry/tree/main/src)) of Simple Contracts in Foundry
 
 - **BasicMessageReceiver**
 - **BasicMessageSender**
