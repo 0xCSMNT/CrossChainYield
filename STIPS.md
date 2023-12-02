@@ -19,12 +19,12 @@ Interacting with bridges is challenging and imposes a cost and time commitment o
 ### User Story
 Sandra has all of her funds on Base. She is a new DeFi user and just got a metamask account. She has heard about good yield on Avalanche AVAX, but is unsure about bridges and the idea of multiple wallets and chains.
 
-Yield Getter (bad name) is a vault that she can easily deposit collateral into on Base, and on the backend it handles all of the bridging for her. She deposits ETH on Base and receives a share token that represents her claim on Staked AVAX on Avalanche.
+X-Chain Yield Vualts provide a way that she can easily deposit collateral into on Base, and on the backend it handles all of the bridging for her. For example, she deposits ETH on Base and receives a share token that represents her claim on Staked AVAX on Avalanche.
 
 ## Background Information
 
 ### ERC4626
-ERC4626 is the standardized vault contract used for accounting and managing user withdrawals and deposits
+ERC4626 is the standardized vault contract used for accounting and managing user withdrawals and deposits. 
 
 #### Examples & Contracts:
 - [Solmate](https://github.com/transmissions11/solmate/blob/main/src/mixins/ERC4626.sol)
@@ -98,7 +98,6 @@ EVMExtraArgsV1
 | gasLimit | uint256 | Specifies the maximum amount of gas CCIP can consume to execute ccipReceive() on the contract located on the destination blockchain. Read Setting gasLimit for more details. |
 | strict   | bool    | Used for strict sequencing. Read Sequencing for more details.                                            |
 
-
 - **Open Question**:
      
 - **Implementation Idea**:
@@ -107,8 +106,6 @@ EVMExtraArgsV1
       - Bridge it to Sepolia.
       - Swap it to another ERC we pair against it on Uni V2 deployment there.
             - Do we want to use BnM instead of LnM? In most practical use cases, it would be a LnM token, like bridges work today. Doesn't matter in the scope of this project, though. 
-
-
 
 ## Open Questions
 _Pose any open questions you may still have about potential solutions here. We want to be sure that they have been resolved before moving ahead with talk about the implementation. This section should be living and breathing through out this process._
@@ -138,8 +135,9 @@ Provide potential solution(s) including the pros and cons of those solutions and
 4. **Custody Solution B** - User Funds on Destination Chain are in a seperate vault that users can withdraw from (much more complicated but possible with CCIP I think)
 5. **Locking Option** - Vault is locked during bridging and swapping sequence to protect against attacks
 
+### High Level Design Plan
 _summarize the final design you went for here and why_
-
+The chosen design will use CCIP as the underlying messaging protocol. As there are a limited number of tokens enabled for the protocol to date, CCIP-BnM will be used as Asset A on the source chain vault, and that will be bridged to
 
     
 ## Timeline
