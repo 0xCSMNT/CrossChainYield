@@ -207,11 +207,11 @@ struct EVMExtraArgsV1 {
 Provide potential solution(s) including the pros and cons of those solutions and who are the different stakeholders in each solution. A recommended solution should be chosen here. A combination of the below solutions will be used for accomplishing the goals of the project.
 
 ### Options Considered 
-- ~~1. **Bridging Solution A** - Use Li.Fi to bridge, and native destination chain swap~~
-- 2. **Bridging Solution B** - Use Chainlink CCIP to send tokens and then use native destination chain swap
-- ~~3. **Custody Solution A** - User Funds on Destination Chain sit in an EOA and cannot be redeemed (one way trip)~~
-- 4. **Custody Solution B** - User Funds on Destination Chain are in a separate vault that users can withdraw from (much more complicated but possible with CCIP I think)
-- 5. **Locking Option** - Vault is locked during bridging and swapping sequence to protect against attacks
+- ~~**Bridging Solution A** - Use Li.Fi to bridge, and native destination chain swap~~
+- **Bridging Solution B** - Use Chainlink CCIP to send tokens and then use native destination chain swap
+- ~~**Custody Solution A** - User Funds on Destination Chain sit in an EOA and cannot be redeemed (one way trip)~~
+- **Custody Solution B** - User Funds on Destination Chain are in a separate vault that users can withdraw from (much more complicated but possible with CCIP I think)
+- **Locking Option** - Vault is locked during bridging and swapping sequence to protect against attacks
 
 
 ### Decision on High Level Design Plan
