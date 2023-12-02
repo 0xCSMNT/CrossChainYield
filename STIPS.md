@@ -147,12 +147,9 @@ _Pose any open questions you may still have about potential solutions here. We w
     - *Answer*
 - [ ] How can we use Li.Fi to execute the bridge and swap?
     - *With a webapp or with a Chainlink Function*
+    - *Not using it*
 - [ ] Chainlink - what libraries & repos?
-    - *Answer*
-- [ ] Chainlink - CCIP how to?
-    - *Answer*
-- [ ] Chainlink - automation how to?
-    - *Answer*
+    - *Answer in Spec*
 - [ ] What testnet deployments are ruled out by picking specific technologies
     - *For example: Li.Fi is not on Sepolia*
 - [ ] Returning execution **data from the swap transaction** on the destination chain: Are we sure that can be handled in the same function call as the swap itself? do we not need to wait for a block so we have something to read from? 
