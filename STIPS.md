@@ -180,21 +180,7 @@ _These should be a distillation of the previous two sections taking into account
 7. Send a CCIP programmable token transfer as well as the message ID of the initially received message.
 8. Swap funds based on the amount of requested funds.
 
-### CCIP/Messages/Transaction Flow/Functionality Mirror
 
-| Action                                            | Source Action                                                                    | Destination action                                                                                     |
-|---------------------------------------------------|----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
-| User deposits                                     | Deposit()                                                                        | No action                                                                                             |
-| Vault mints shares                                | mint()                                                                           | No action                                                                                             |
-| totalAssets()                                     | Check for pre-updated value of destination assets, calculate present value in [base asset via Chainlink oracle](https://github.com/smartcontractkit/ccip-defi-lending/blob/c12632b6f1b0954a081e8c658b64ebbd81c4d980/contracts/Protocol.sol#L107) | Should pre-update values after each deposit in the destination asset. Default would be zero.          |
-| After mint(), funds sit in the destination vault until bridging event called by CL keeper | A [sendFunds()](https://github.com/smartcontractkit/ccip-defi-lending/blob/c12632b6f1b0954a081e8c658b64ebbd81c4d980/contracts/Sender.sol#L71C17-L71C17) function constructs the message, initializes the router, sends the message, locks the vault and returns the messageId. | *A _ccipRecieve function identifies the message and uses the token amount to call a swap() function   |
-|                                                   | A _ccipReceive function identifies the message and uses the received value to update the `totalAssets` on the vault, and call `unlockVault()` | A chainlink keeper uses a [log-based trigger](https://medium.com/@warissara.0039/log-trigger-upkeep-with-chainlink-automation-9d1805a29eda) to view the received tokens from the swap and return that data via CCIP to the source chain. |
-| User requests withdraw                            | Withdraw()                                                                       | No action                                                                                             |
-| Vault burns the shares, requests for funds from destination | Vault calculates base asset to be requested based on oracle value and on value of deposit asset currently in the source chain vault, burns the shares, records the value of base asset to be requests, user address, [requests for funds via CCIP](https://github.com/smartcontractkit/ccip-liquidation-protector/blob/f0e71131a6171ffe04deeec653b5d5efe9f3713f/contracts/monitors/MonitorCompoundV3.sol#L82) | Destination vault then checks for the amount needed, [swaps to the base token, and sends a CCIP token transfer](https://github.com/smartcontractkit/ccip-liquidation-protector/blob/f0e71131a6171ffe04deeec653b5d5efe9f3713f/contracts/LPSC.sol#L58C20-L58C20) |
-| Vault receives funds, completes withdrawal request | __ccipreceive and then return funds to user # Spec Doc for CL Vault
-
-Reference
-[ccip-liquidation-protector](https://github.com/smartcontractkit/ccip-liquidation-protector/tree/f0e71131a6171ffe04deeec653b5d5efe9f3713f)
 
 ### Deposits & Withdrawals Transaction Flows
 
@@ -264,6 +250,23 @@ Before we move onto the implementation phase we want to make sure that we are al
 [Link to Deploy outputs PR]()
 
 # Additional Research
+
+## Transaction FLows
+### CCIP/Messages/Transaction Flow/Functionality Mirror
+
+| Action                                            | Source Action                                                                    | Destination action                                                                                     |
+|---------------------------------------------------|----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
+| User deposits                                     | Deposit()                                                                        | No action                                                                                             |
+| Vault mints shares                                | mint()                                                                           | No action                                                                                             |
+| totalAssets()                                     | Check for pre-updated value of destination assets, calculate present value in [base asset via Chainlink oracle](https://github.com/smartcontractkit/ccip-defi-lending/blob/c12632b6f1b0954a081e8c658b64ebbd81c4d980/contracts/Protocol.sol#L107) | Should pre-update values after each deposit in the destination asset. Default would be zero.          |
+| After mint(), funds sit in the destination vault until bridging event called by CL keeper | A [sendFunds()](https://github.com/smartcontractkit/ccip-defi-lending/blob/c12632b6f1b0954a081e8c658b64ebbd81c4d980/contracts/Sender.sol#L71C17-L71C17) function constructs the message, initializes the router, sends the message, locks the vault and returns the messageId. | *A _ccipRecieve function identifies the message and uses the token amount to call a swap() function   |
+|                                                   | A _ccipReceive function identifies the message and uses the received value to update the `totalAssets` on the vault, and call `unlockVault()` | A chainlink keeper uses a [log-based trigger](https://medium.com/@warissara.0039/log-trigger-upkeep-with-chainlink-automation-9d1805a29eda) to view the received tokens from the swap and return that data via CCIP to the source chain. |
+| User requests withdraw                            | Withdraw()                                                                       | No action                                                                                             |
+| Vault burns the shares, requests for funds from destination | Vault calculates base asset to be requested based on oracle value and on value of deposit asset currently in the source chain vault, burns the shares, records the value of base asset to be requests, user address, [requests for funds via CCIP](https://github.com/smartcontractkit/ccip-liquidation-protector/blob/f0e71131a6171ffe04deeec653b5d5efe9f3713f/contracts/monitors/MonitorCompoundV3.sol#L82) | Destination vault then checks for the amount needed, [swaps to the base token, and sends a CCIP token transfer](https://github.com/smartcontractkit/ccip-liquidation-protector/blob/f0e71131a6171ffe04deeec653b5d5efe9f3713f/contracts/LPSC.sol#L58C20-L58C20) |
+| Vault receives funds, completes withdrawal request | __ccipreceive and then return funds to user # Spec Doc for CL Vault
+
+Reference
+[ccip-liquidation-protector](https://github.com/smartcontractkit/ccip-liquidation-protector/tree/f0e71131a6171ffe04deeec653b5d5efe9f3713f)
 
 ## Unused Protocol Research
 ### Chainlink Functions
