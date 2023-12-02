@@ -82,8 +82,8 @@ ERC4626 is the standardized vault contract used for accounting and managing user
   - **BnM**: These tokens are minted on each testnet. When transferring these tokens between testnet blockchains, CCIP burns the tokens on the source chain and mints them on the destination chain.
   - **LnM**: These tokens are only minted on Ethereum Sepolia. On other testnet blockchains, the token representation is a wrapped/synthetic asset called clCCIP-LnM. When transferring these tokens from Ethereum Sepolia to another testnet, CCIP locks the CCIP-LnM tokens on the source chain and mints the wrapped representation clCCIP-LnM on the destination chain. Between non-Ethereum Sepolia chains, CCIP burns and mints the wrapped representation clCCIP-LnM.
  
-- [Masterclass](https://andrej-rakic.gitbook.io/chainlink-ccip/ccip-masterclass/exercise-1-transfer-tokens) - use this guide
-- API References - use these to construct your function calls
+- [**Masterclass**](https://andrej-rakic.gitbook.io/chainlink-ccip/ccip-masterclass/exercise-1-transfer-tokens) - use this guide to design your contracts
+- **API References** - use these to construct your function calls
   - [RouterClient](https://docs.chain.link/ccip/api-reference/i-router-client#ccipsend)
   - [CCIPReceiver](https://docs.chain.link/ccip/api-reference/ccip-receiver)
   - [Client Library](https://docs.chain.link/ccip/api-reference/client)
@@ -96,7 +96,7 @@ constructor(address _router) {
      router = IRouterClient(_router);
  }
 ```
-- **ccipSend** - requerst a message to be sent to the destination chain
+- **ccipSend** - request a message to be sent to the destination chain
 ```solidity
 function ccipSend(uint64 destinationChainSelector, struct Client.EVM2AnyMessage message) external payable returns (bytes32)
 ```
@@ -146,6 +146,44 @@ struct EVMExtraArgsV1 {
 |----------|---------|----------------------------------------------------------------------------------------------------------|
 | gasLimit | uint256 | Specifies the maximum amount of gas CCIP can consume to execute ccipReceive() on the contract located on the destination blockchain. Read Setting gasLimit for more details. |
 | strict   | bool    | Used for strict sequencing. Read Sequencing for more details.                                            |
+
+## Examples of Simple Contracts in Foundry
+
+- **BasicMessageReceiver**
+- **BasicMessageSender**
+- **BasicTokenSender**
+- **CCIPReceiver.sol** - Abstract contract. Use this to receive messages on the destination chain, inherit from npm toolkit.
+- **Transferor.sol** - Example contract of a simple transferring contract on the home chain, with features like whitelisting.
+
+#### CCIP Architecture
+
+##### The Router
+- The primary contract CCIP users interface with.
+- Responsible for initiating cross-chain interactions. One router contract exists per chain.
+- When transferring tokens, callers must approve tokens for the router contract.
+- Routes the instruction to the destination-specific OnRamp.
+
+##### Commit Store
+- The Committing DON interacts with the CommitStore contract on the destination blockchain to store the Merkle root of the finalized messages on the source blockchain.
+
+##### OnRamp
+- One OnRamp contract per lane.
+- Checks destination-blockchain-specific validity (e.g., validating account address syntax).
+- Verifies the message size limit and gas limits.
+- Keeps track of sequence numbers to preserve the sequence of messages for the receiver.
+- Manages billing and interacts with the TokenPool if the message includes a token transfer.
+- Emits an event monitored by the committing DON.
+
+##### OffRamp
+- One OffRamp contract per lane.
+- Ensures message authenticity by verifying the proof against a committed and blessed Merkle root.
+- Executes transactions only once.
+- After validation, transmits received messages to the Router contract.
+- If the CCIP transaction includes token transfers, calls the TokenPool to transfer assets to the receiver.
+
+##### Token Pools
+- Each token has its own token pool, an abstraction layer over ERC-20 tokens facilitating OnRamp and OffRamp operations.
+- Configurable to lock or burn at the source blockchain and unlock or mint at the destination blockchain.
 
 
 ## Open Questions
