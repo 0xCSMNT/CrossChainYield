@@ -75,13 +75,52 @@ ERC4626 is the standardized vault contract used for accounting and managing user
 
 ### Chainlink CCIP
 - Install Foundry Chainlink Toolkit: `forge install smartcontractkit/foundry-chainlink-toolkit`
+- Install CCIP Node Package: `npm install @chainlink/contracts-ccip --save`
 - Supported [Testnets](https://docs.chain.link/ccip/supported-networks/testnet)
 - **Uniswap V2 [Deployment](https://sepolia.etherscan.io/address/0xC532a74256D3Db42D0Bf7a0400fEFDbad7694008#code)** on Sepolia
 - **[CCIP Test Tokens](https://docs.chain.link/ccip/test-tokens#mint-tokens-in-the-documentation)**:
   - **BnM**: These tokens are minted on each testnet. When transferring these tokens between testnet blockchains, CCIP burns the tokens on the source chain and mints them on the destination chain.
   - **LnM**: These tokens are only minted on Ethereum Sepolia. On other testnet blockchains, the token representation is a wrapped/synthetic asset called clCCIP-LnM. When transferring these tokens from Ethereum Sepolia to another testnet, CCIP locks the CCIP-LnM tokens on the source chain and mints the wrapped representation clCCIP-LnM on the destination chain. Between non-Ethereum Sepolia chains, CCIP burns and mints the wrapped representation clCCIP-LnM.
  
-EVM2AnyMessage - use this solidity struct to build the CCIP message
+- [Masterclass](https://andrej-rakic.gitbook.io/chainlink-ccip/ccip-masterclass/exercise-1-transfer-tokens) - use this guide
+- API References - use these to construct your function calls
+  - [RouterClient](https://docs.chain.link/ccip/api-reference/i-router-client#ccipsend)
+  - [CCIPReceiver](https://docs.chain.link/ccip/api-reference/ccip-receiver)
+  - [Client Library](https://docs.chain.link/ccip/api-reference/client)
+- IRouterClient Import statement:
+```solidity
+import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
+...
+IRouterClient router;
+constructor(address _router) {
+     router = IRouterClient(_router);
+ }
+```
+- **ccipSend** - requerst a message to be sent to the destination chain
+```solidity
+function ccipSend(uint64 destinationChainSelector, struct Client.EVM2AnyMessage message) external payable returns (bytes32)
+```
+- **EVM2AnyMessage** - CCIP senders use this solidity struct to build the CCIP message.
+```solidity
+struct EVM2AnyMessage {
+  bytes receiver;
+  bytes data;
+  struct Client.EVMTokenAmount[] tokenAmounts;
+  address feeToken;
+  bytes extraArgs;
+}
+```
+ 
+- **Any2EVMMessage** - CCIP receivers use this solidity struct to parse the received CCIP message.
+```solidity
+struct Any2EVMMessage {
+  bytes32 messageId;
+  uint64 sourceChainSelector;
+  bytes sender;
+  bytes data;
+  struct Client.EVMTokenAmount[] destTokenAmounts;
+}
+```
 
 | Name         | Type                       | Description                                                                                       |
 |--------------|----------------------------|---------------------------------------------------------------------------------------------------|
@@ -91,7 +130,17 @@ EVM2AnyMessage - use this solidity struct to build the CCIP message
 | feeToken     | address                    | Address of feeToken. Set address(0) to pay in native gas tokens such as ETH on Ethereum or MATIC on Polygon. |
 | extraArgs    | bytes                      | Users fill in the EVMExtraArgsV1 struct then encode it to bytes using the _argsToBytes function.  |
 
-EVMExtraArgsV1
+- extraArgs
+```solidity
+bytes4 EVM_EXTRA_ARGS_V1_TAG
+```
+- EVMExtraArgsV1
+```solidity
+struct EVMExtraArgsV1 {
+  uint256 gasLimit;
+  bool strict;
+}
+```
 
 | Name     | Type    | Description                                                                                              |
 |----------|---------|----------------------------------------------------------------------------------------------------------|
