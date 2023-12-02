@@ -87,7 +87,7 @@ ERC4626 is the standardized vault contract used for accounting and managing user
   - [RouterClient](https://docs.chain.link/ccip/api-reference/i-router-client#ccipsend)
   - [CCIPReceiver](https://docs.chain.link/ccip/api-reference/ccip-receiver)
   - [Client Library](https://docs.chain.link/ccip/api-reference/client)
-- IRouterClient Import statement:
+- **IRouterClient** Import statement:
 ```solidity
 import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
 ...
@@ -147,15 +147,15 @@ struct EVMExtraArgsV1 {
 | gasLimit | uint256 | Specifies the maximum amount of gas CCIP can consume to execute ccipReceive() on the contract located on the destination blockchain. Read Setting gasLimit for more details. |
 | strict   | bool    | Used for strict sequencing. Read Sequencing for more details.                                            |
 
-## Examples of Simple Contracts in Foundry
+## [Examples]([url](https://github.com/smartcontractkit/ccip-starter-kit-foundry/tree/main/src)) of Simple Contracts in Foundry
 
 - **BasicMessageReceiver**
 - **BasicMessageSender**
 - **BasicTokenSender**
-- **CCIPReceiver.sol** - Abstract contract. Use this to receive messages on the destination chain, inherit from npm toolkit.
-- **Transferor.sol** - Example contract of a simple transferring contract on the home chain, with features like whitelisting.
+- **[CCIPReceiver.sol]([url](https://github.com/0xCSMNT/ccip-testing/blob/master/node_modules/%40chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol))** - Abstract contract. Use this to receive messages on the destination chain, inherit from npm toolkit.
+- **[Transferor.sol]([url](https://github.com/0xCSMNT/ccip-testing/blob/master/Transferor.sol))** - Example contract of a simple transferring contract on the home chain, with features like whitelisting.
 
-#### CCIP Architecture
+#### Interaction with [CCIP Architecture]([url](https://docs.chain.link/ccip/architecture))
 
 ##### The Router
 - The primary contract CCIP users interface with.
