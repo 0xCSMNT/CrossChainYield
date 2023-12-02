@@ -100,7 +100,6 @@ EVMExtraArgsV1
 
 
 ## Open Questions
-_Pose any open questions you may still have about potential solutions here. We want to be sure that they have been resolved before moving ahead with talk about the implementation. This section should be living and breathing through out this process._
 - [ ] What assets and what chain to use? Why?
     - *Answer*
 - [ ]How will the swap on the destination chain trigger the CCIP message to update the accounting?
@@ -121,35 +120,21 @@ _Pose any open questions you may still have about potential solutions here. We w
 Provide potential solution(s) including the pros and cons of those solutions and who are the different stakeholders in each solution. A recommended solution should be chosen here. A combination of the below solutions will be used for accomplishing the goals of the project.
 
 ### Options 
-~~1. **Bridging Solution A** - Use Li.Fi to bridge, and native destination chain swap~~
-2. **Bridging Solution B** - Use Chainlink CCIP to send tokens and then use native destination chain swap 
-~~3. **Custody Solution A** - User Funds on Destination Chain sit in an EOA and cannot be redeemed (one way trip)~~
-4. **Custody Solution B** - User Funds on Destination Chain are in a seperate vault that users can withdraw from (much more complicated but possible with CCIP I think)
-5. **Locking Option** - Vault is locked during bridging and swapping sequence to protect against attacks
+- ~~1. **Bridging Solution A** - Use Li.Fi to bridge, and native destination chain swap~~
+- 2. **Bridging Solution B** - Use Chainlink CCIP to send tokens and then use native destination chain swap 
+- ~~3. **Custody Solution A** - User Funds on Destination Chain sit in an EOA and cannot be redeemed (one way trip)~~
+- 4. **Custody Solution B** - User Funds on Destination Chain are in a seperate vault that users can withdraw from (much more complicated but possible with CCIP I think)
+- 5. **Locking Option** - Vault is locked during bridging and swapping sequence to protect against attacks
 
 ### High Level Design Plan
-_summarize the final design you went for here and why_
 The chosen design will use CCIP as the underlying messaging protocol. As there are a limited number of tokens enabled for the protocol to date, CCIP-BnM will be used as Asset A on the source chain vault, and that will be bridged to the Destination Chain Vault. Here is will be swapped to an ERC20 using a Uniswap V2 fork and deposited into another ERC4626.
 
 The vault will be locked during bridging periods to protect from griefing while the value of the underlying is undefined.
 
-## Timeline
-A proposed timeline for completion
-
 ## Checkpoint 1
-
-## Proposed Architecture Changes
-
-### Goal 
-_Describe the actual solution you decided upon_
-
-CCIP Vault will be able to deposit and withdraw capital from a destination chain and handle accounting on source chain.
-
-### Design 
-There could be two contracts in the protocol/vault architecture. 
+Before more in depth design of the contract flows lets make sure that all the work done to this point has been exhaustive. It should be clear what we're doing, why, and for who. All necessary information on external protocols should be gathered and potential solutions considered. At this point we should be in alignment with product on the non-technical requirements for this feature. It is up to the reviewer to determine whether we move onto the next step.
 
 ## Requirements
-_These should be a distillation of the previous two sections taking into account the decided upon high-level implementation. Each flow should have high level requirements taking into account the needs of participants in the flow (users, managers, market makers, app devs, etc)_
 
 ### Source Vault
 
@@ -180,8 +165,6 @@ _These should be a distillation of the previous two sections taking into account
 7. Send a CCIP programmable token transfer as well as the message ID of the initially received message.
 8. Swap funds based on the amount of requested funds.
 
-
-
 ### Deposits & Withdrawals Transaction Flows
 
 ##### Deposits & Daily Bridging 1
@@ -200,8 +183,7 @@ _These should be a distillation of the previous two sections taking into account
 
 ![6.png](assets/6.png)
 
-## User Flows
-- Highlight *each* external flow enabled by this feature. It's helpful to use diagrams (add them to the `assets` folder). Examples can be very helpful, make sure to highlight *who* is initiating this flow, *when* and *why*. A reviewer should be able to pick out what requirements are being covered by this flow.
+
 ## Checkpoint 2
 Before we spec out the contract(s) in depth we want to make sure that we are aligned on all the technical requirements and flows for contract interaction. Again the who, what, when, why should be clearly illuminated for each flow. It is up to the reviewer to determine whether we move onto the next step.
 
