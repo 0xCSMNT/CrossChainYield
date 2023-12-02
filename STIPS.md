@@ -19,7 +19,7 @@ Interacting with bridges is challenging and imposes a cost and time commitment o
 ### User Story
 Sandra has all of her funds on Base. She is a new DeFi user and just got a metamask account. She has heard about good yield on Avalanche AVAX, but is unsure about bridges and the idea of multiple wallets and chains.
 
-X-Chain Yield Vualts provide a way that she can easily deposit collateral into on Base, and on the backend it handles all of the bridging for her. For example, she deposits ETH on Base and receives a share token that represents her claim on Staked AVAX on Avalanche.
+X-Chain Yield Vaults provide a way that she can easily deposit collateral into her preferred chain, and on the backend it handles all of the bridging for her. For example, she deposits ETH on Base and receives a share token that represents her claim on Staked AVAX on Avalanche.
 
 ## Background Information
 
@@ -98,14 +98,6 @@ EVMExtraArgsV1
 | gasLimit | uint256 | Specifies the maximum amount of gas CCIP can consume to execute ccipReceive() on the contract located on the destination blockchain. Read Setting gasLimit for more details. |
 | strict   | bool    | Used for strict sequencing. Read Sequencing for more details.                                            |
 
-- **Open Question**:
-     
-- **Implementation Idea**:
-    - If we can create our own CCIP BnM test tokens, we might not need to use a third-party bridge and can keep it all to onchain CL stack.
-      - Could use the BnM token on Polygon Mumbai as the deposit asset.
-      - Bridge it to Sepolia.
-      - Swap it to another ERC we pair against it on Uni V2 deployment there.
-            - Do we want to use BnM instead of LnM? In most practical use cases, it would be a LnM token, like bridges work today. Doesn't matter in the scope of this project, though. 
 
 ## Open Questions
 _Pose any open questions you may still have about potential solutions here. We want to be sure that they have been resolved before moving ahead with talk about the implementation. This section should be living and breathing through out this process._
@@ -137,19 +129,17 @@ Provide potential solution(s) including the pros and cons of those solutions and
 
 ### High Level Design Plan
 _summarize the final design you went for here and why_
-The chosen design will use CCIP as the underlying messaging protocol. As there are a limited number of tokens enabled for the protocol to date, CCIP-BnM will be used as Asset A on the source chain vault, and that will be bridged to
+The chosen design will use CCIP as the underlying messaging protocol. As there are a limited number of tokens enabled for the protocol to date, CCIP-BnM will be used as Asset A on the source chain vault, and that will be bridged to the Destination Chain Vault. Here is will be swapped to an ERC20 using a Uniswap V2 fork and deposited into another ERC4626.
 
-    
+The vault will be locked during bridging periods to protect from griefing while the value of the underlying is undefined.
+
 ## Timeline
 A proposed timeline for completion
 
 ## Checkpoint 1
-_Before more in depth design of the contract flows lets make sure that all the work done to this point has been exhaustive. It should be clear what we're doing, why, and for who. All necessary information on external protocols should be gathered and potential solutions considered. At this point we should be in alignment with product on the non-technical requirements for this feature. It is up to the reviewer to determine whether we move onto the next step._
-
-**Reviewer**:
 
 ## Proposed Architecture Changes
-_A diagram would be helpful here to see where new feature slot into the system. Additionally a brief description of any new contracts is helpful._
+
 ### Goal 
 _Describe the actual solution you decided upon_
 
