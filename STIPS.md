@@ -190,33 +190,33 @@ struct EVMExtraArgsV1 {
 Note: created by ChatGPT, so probably inaccurate.
 
 ```solidity
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
-import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IRouterClient } from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
+import { CCIPReceiver } from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
+import { Client } from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 contract CCIPSwapReceiver is CCIPReceiver {
     IUniswapV2Router02 public uniswapRouter;
+    IRouterClient public ccipRouter;
+    address public linkToken;
 
-    constructor(address routerAddress, address _uniswapRouter) CCIPReceiver(routerAddress) {
+    constructor(address _ccipRouter, address _uniswapRouter, address _linkToken) CCIPReceiver(_ccipRouter) {
         uniswapRouter = IUniswapV2Router02(_uniswapRouter);
+        ccipRouter = IRouterClient(_ccipRouter);
+        linkToken = _linkToken;
     }
 
-    function _ccipReceive(
-        Client.Any2EVMMessage memory message
-    ) 
-        internal
-        override 
-    {
+    function _ccipReceive(Client.Any2EVMMessage memory message) internal override {
         // Decode the message to extract the swap details
-        (address tokenToSwap, uint amountIn, uint amountOutMin, address[] memory path) = abi.decode(
+        (address tokenToSwap, uint amountIn, uint amountOutMin, address[] memory path, uint64 sourceChain, bytes memory returnData) = abi.decode(
             message.data,
-            (address, uint, uint, address[])
+            (address, uint, uint, address[], uint64, bytes)
         );
 
         // Transfer the tokens from the sender to this contract
@@ -225,16 +225,44 @@ contract CCIPSwapReceiver is CCIPReceiver {
         // Approve the Uniswap router to spend the tokens
         IERC20(tokenToSwap).approve(address(uniswapRouter), amountIn);
 
-        // Perform the swap on Uniswap
-        uniswapRouter.swapExactTokensForTokens(
+        // Perform the swap on Uniswap and capture the output amount
+        uint[] memory amounts = uniswapRouter.swapExactTokensForTokens(
             amountIn,
             amountOutMin,
             path,
-            msg.sender, // or another address where you want to send the output tokens
+            address(this),
             block.timestamp + 15 minutes // deadline
         );
+
+        // Build and send the CCIP message back to the original chain
+        _sendCCIPResponse(sourceChain, amounts[amounts.length - 1], returnData);
+    }
+
+    function _sendCCIPResponse(uint64 sourceChain, uint256 swapOutput, bytes memory returnData) internal {
+        // Encode the swap output data
+        bytes memory data = abi.encode(swapOutput, returnData);
+
+        // Create an EVM2AnyMessage
+        Client.EVM2AnyMessage memory ccipMessage = Client.EVM2AnyMessage({
+            receiver: data,
+            data: "",
+            tokenAmounts: new Client.EVMTokenAmount[](0), // No token transfer in this message
+            extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 200_000, strict: false})),
+            feeToken: linkToken
+        });
+
+        // Calculate the fee and ensure this contract has enough LINK to cover it
+        uint256 fee = ccipRouter.getFee(sourceChain, ccipMessage);
+        require(IERC20(linkToken).balanceOf(address(this)) >= fee, "Insufficient LINK for CCIP fee");
+
+        // Approve the Router to spend LINK
+        IERC20(linkToken).approve(address(ccipRouter), fee);
+
+        // Send the CCIP message
+        ccipRouter.ccipSend(sourceChain, ccipMessage);
     }
 }
+
 ```
 
 ## Open Questions
