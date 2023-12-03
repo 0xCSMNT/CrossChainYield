@@ -185,7 +185,9 @@ struct EVMExtraArgsV1 {
 - Each token has its own token pool, an abstraction layer over ERC-20 tokens facilitating OnRamp and OffRamp operations.
 - Configurable to lock or burn at the source blockchain and unlock or mint at the destination blockchain.
 
-### Uniswap V2 - ChatGPT Example of a swap after a CCIP message is received
+### Uniswap V2 
+#### Example of a swap after a CCIP message is received 
+Note: created by ChatGPT, so probably inaccurate.
 
 ```solidity
 
