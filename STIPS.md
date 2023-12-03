@@ -147,12 +147,12 @@ struct EVMExtraArgsV1 {
 | gasLimit | uint256 | Specifies the maximum amount of gas CCIP can consume to execute ccipReceive() on the contract located on the destination blockchain. Read Setting gasLimit for more details. |
 | strict   | bool    | Used for strict sequencing. Read Sequencing for more details.                                            |
 
-#### [Examples](https://github.com/smartcontractkit/ccip-starter-kit-foundry/tree/main/src) of Simple Contracts in Foundry
+#### Simple Contracts in Foundry - [Examples](https://github.com/smartcontractkit/ccip-starter-kit-foundry/tree/main/src) 
 
 - **BasicMessageReceiver**
 - **BasicMessageSender**
 - **BasicTokenSender**
-- **[CCIPReceiver.sol]((https://github.com/0xCSMNT/ccip-testing/blob/master/node_modules/%40chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol))** - Abstract contract. Use this to receive messages on the destination chain, inherit from npm toolkit.
+- **[CCIPReceiver.sol](https://github.com/0xCSMNT/ccip-testing/blob/master/node_modules/%40chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol)** - Abstract contract. Use this to receive messages on the destination chain, inherit from npm toolkit.
 - **[Transferor.sol](https://github.com/0xCSMNT/ccip-testing/blob/master/Transferor.sol)** - Example contract of a simple transferring contract on the home chain, with features like whitelisting.
 
 #### Interaction with [CCIP Architecture](https://docs.chain.link/ccip/architecture)
