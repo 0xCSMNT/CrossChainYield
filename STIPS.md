@@ -213,6 +213,57 @@ Provide potential solution(s) including the pros and cons of those solutions and
 - **Custody Solution B** - User Funds on Destination Chain are in a separate vault that users can withdraw from (much more complicated but possible with CCIP I think)
 - **Locking Option** - Vault is locked during bridging and swapping sequence to protect against attacks
 
+### Uniswap V2 - ChatGPT Example of a swap after a CCIP message is received
+
+```solidity
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
+import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
+import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
+import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
+import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
+
+contract CCIPSwapReceiver is CCIPReceiver {
+    IUniswapV2Router02 public uniswapRouter;
+
+    constructor(address routerAddress, address _uniswapRouter) CCIPReceiver(routerAddress) {
+        uniswapRouter = IUniswapV2Router02(_uniswapRouter);
+    }
+
+    function _ccipReceive(
+        Client.Any2EVMMessage memory message
+    ) 
+        internal
+        override 
+    {
+        // Decode the message to extract the swap details
+        (address tokenToSwap, uint amountIn, uint amountOutMin, address[] memory path) = abi.decode(
+            message.data,
+            (address, uint, uint, address[])
+        );
+
+        // Transfer the tokens from the sender to this contract
+        IERC20(tokenToSwap).transferFrom(msg.sender, address(this), amountIn);
+
+        // Approve the Uniswap router to spend the tokens
+        IERC20(tokenToSwap).approve(address(uniswapRouter), amountIn);
+
+        // Perform the swap on Uniswap
+        uniswapRouter.swapExactTokensForTokens(
+            amountIn,
+            amountOutMin,
+            path,
+            msg.sender, // or another address where you want to send the output tokens
+            block.timestamp + 15 minutes // deadline
+        );
+    }
+}
+```
+
+
 
 ### Decision on High Level Design Plan
 The chosen design will use CCIP as the underlying messaging protocol. As there are a limited number of tokens enabled for the protocol to date, CCIP-BnM will be used as Asset A on the source chain vault, and that will be bridged to the Destination Chain Vault. Here is will be swapped to an ERC20 using a Uniswap V2 fork and deposited into another ERC4626.
