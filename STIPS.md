@@ -185,34 +185,6 @@ struct EVMExtraArgsV1 {
 - Each token has its own token pool, an abstraction layer over ERC-20 tokens facilitating OnRamp and OffRamp operations.
 - Configurable to lock or burn at the source blockchain and unlock or mint at the destination blockchain.
 
-
-## Open Questions
-- [ ] What assets and what chain to use? Why?
-    - *Answer*
-- [ ]How will the swap on the destination chain trigger the CCIP message to update the accounting?
-      - Does a swap need to update anything? 
-        - The whole purpose of accounting is to issue the right amount of shares, so if a new user deposits on the source chain after the above swap, the NAV of the vault will be calculated based on the post swap asset balances. Our goal is to be able to get this value across to the source chain using a function call on the source chain.
-      - Should the origin vault also be the sender contract and the destination vault be the reciever contract?
-      - OR Should the token transfers be routed via a protocol controlled transfer contract?
-      - Also can deposit + bridging be atomic ie in the same transaction? What is the expected latency?
-- [ ] What testnet deployments are ruled out by picking specific technologies
-    - *For example: Li.Fi is not on Sepolia*
-- [ ] Returning execution **data from the swap transaction** on the destination chain: Are we sure that can be handled in the same function call as the swap itself? do we not need to wait for a block so we have something to read from? 
-    - *Answer*
-- [ ] For withdrawals: Are we sure we want **push instead of pull** for transfering assets to user?
-    - pull is safe lets do that
-- [ ] How do we enable pull on the source chain vault? How do we keep user funds safer
-
-## Feasibility Analysis
-Provide potential solution(s) including the pros and cons of those solutions and who are the different stakeholders in each solution. A recommended solution should be chosen here. A combination of the below solutions will be used for accomplishing the goals of the project.
-
-### Options Considered 
-- ~~**Bridging Solution A** - Use Li.Fi to bridge, and native destination chain swap~~
-- **Bridging Solution B** - Use Chainlink CCIP to send tokens and then use native destination chain swap
-- ~~**Custody Solution A** - User Funds on Destination Chain sit in an EOA and cannot be redeemed (one way trip)~~
-- **Custody Solution B** - User Funds on Destination Chain are in a separate vault that users can withdraw from (much more complicated but possible with CCIP I think)
-- **Locking Option** - Vault is locked during bridging and swapping sequence to protect against attacks
-
 ### Uniswap V2 - ChatGPT Example of a swap after a CCIP message is received
 
 ```solidity
@@ -263,7 +235,32 @@ contract CCIPSwapReceiver is CCIPReceiver {
 }
 ```
 
+## Open Questions
+- [ ] What assets and what chain to use? Why?
+    - *Answer*
+- [ ]How will the swap on the destination chain trigger the CCIP message to update the accounting?
+      - Does a swap need to update anything? 
+        - The whole purpose of accounting is to issue the right amount of shares, so if a new user deposits on the source chain after the above swap, the NAV of the vault will be calculated based on the post swap asset balances. Our goal is to be able to get this value across to the source chain using a function call on the source chain.
+      - Should the origin vault also be the sender contract and the destination vault be the reciever contract?
+      - OR Should the token transfers be routed via a protocol controlled transfer contract?
+      - Also can deposit + bridging be atomic ie in the same transaction? What is the expected latency?
+- [ ] What testnet deployments are ruled out by picking specific technologies
+    - *For example: Li.Fi is not on Sepolia*
+- [ ] Returning execution **data from the swap transaction** on the destination chain: Are we sure that can be handled in the same function call as the swap itself? do we not need to wait for a block so we have something to read from? 
+    - *Answer*
+- [ ] For withdrawals: Are we sure we want **push instead of pull** for transfering assets to user?
+    - pull is safe lets do that
+- [ ] How do we enable pull on the source chain vault? How do we keep user funds safer
 
+## Feasibility Analysis
+Provide potential solution(s) including the pros and cons of those solutions and who are the different stakeholders in each solution. A recommended solution should be chosen here. A combination of the below solutions will be used for accomplishing the goals of the project.
+
+### Options Considered 
+- ~~**Bridging Solution A** - Use Li.Fi to bridge, and native destination chain swap~~
+- **Bridging Solution B** - Use Chainlink CCIP to send tokens and then use native destination chain swap
+- ~~**Custody Solution A** - User Funds on Destination Chain sit in an EOA and cannot be redeemed (one way trip)~~
+- **Custody Solution B** - User Funds on Destination Chain are in a separate vault that users can withdraw from (much more complicated but possible with CCIP I think)
+- **Locking Option** - Vault is locked during bridging and swapping sequence to protect against attacks
 
 ### Decision on High Level Design Plan
 The chosen design will use CCIP as the underlying messaging protocol. As there are a limited number of tokens enabled for the protocol to date, CCIP-BnM will be used as Asset A on the source chain vault, and that will be bridged to the Destination Chain Vault. Here is will be swapped to an ERC20 using a Uniswap V2 fork and deposited into another ERC4626.
