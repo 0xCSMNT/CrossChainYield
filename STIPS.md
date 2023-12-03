@@ -266,21 +266,30 @@ contract CCIPSwapReceiver is CCIPReceiver {
 ```
 
 ## Open Questions
-- [ ] What assets and what chain to use? Why?
-    - *Answer*
+- [x] What assets and what chain to use? Why?
+    - *Source Vault Chain: Avalanche Fuji*
+    - *Destination Vault Chain: Ethereum Sepolia*
+      - *This ensures the fastest settlement*
+    - *Deposit Asset on Source Chain: CCIP-BnM*
+    - *Yield Asset on Destination Chain: Create a basic ERC20 on Sepolia*
+      -  *This ensures we have a bridgeable asset and access to a [Uni V2 Fork](https://sepolia.etherscan.io/address/0xC532a74256D3Db42D0Bf7a0400fEFDbad7694008#code) for swaps on the destination chain* 
 - [ ]How will the swap on the destination chain trigger the CCIP message to update the accounting?
-      - Does a swap need to update anything? 
-        - The whole purpose of accounting is to issue the right amount of shares, so if a new user deposits on the source chain after the above swap, the NAV of the vault will be calculated based on the post swap asset balances. Our goal is to be able to get this value across to the source chain using a function call on the source chain.
-      - Should the origin vault also be the sender contract and the destination vault be the reciever contract?
+      - *Part of a _ccipReceive() function call* 
+        - ~~The whole purpose of accounting is to issue the right amount of shares, so if a new user deposits on the source chain after the above swap, the NAV of the vault will be calculated based on the post swap asset balances. Our goal is to be able to get this value across to the source chain using a function call on the source chain.~~
+      - _This is not right becase the deposit vault is unaware of NAV decay from the swap until that data has been returned by CCIP_
+  Should the origin vault also be the sender contract and the destination vault be the reciever contract?
       - OR Should the token transfers be routed via a protocol controlled transfer contract?
+        - Same contract
       - Also can deposit + bridging be atomic ie in the same transaction? What is the expected latency?
+      - Latency is equal to block confirmation time
 - [ ] What testnet deployments are ruled out by picking specific technologies
     - *For example: Li.Fi is not on Sepolia*
 - [ ] Returning execution **data from the swap transaction** on the destination chain: Are we sure that can be handled in the same function call as the swap itself? do we not need to wait for a block so we have something to read from? 
-    - *Answer*
+    - *Reasonably confident this is possible*
 - [ ] For withdrawals: Are we sure we want **push instead of pull** for transfering assets to user?
     - pull is safe lets do that
 - [ ] How do we enable pull on the source chain vault? How do we keep user funds safer
+    - Use a mapping to set withdrawal limits to 0 for all users while a withdrawal & bridge action is in place
 
 ## Feasibility Analysis
 Provide potential solution(s) including the pros and cons of those solutions and who are the different stakeholders in each solution. A recommended solution should be chosen here. A combination of the below solutions will be used for accomplishing the goals of the project.
@@ -348,6 +357,8 @@ Before more in depth design of the contract flows lets make sure that all the wo
 ##### Withdrawals 2
 
 ![6.png](assets/6.png)
+
+##### Withdrawal Accounting
 
 
 ## Checkpoint 2
