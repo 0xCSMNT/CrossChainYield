@@ -393,7 +393,7 @@ Reviewer: []
 - `LinkTokenInterface linkToken`: Instance of LinkTokenInterface to interact with LINK tokens.
 - `mapping(uint64 => bool) public whitelistedChains`: Tracks the chains that are allowed for cross-chain communication.
 - `Address destinationVault`: Address of the destination vault contract.
-- `uint256 totalAssets()`
+- `uint256 totalAssets`
 
 #### Functions
 - `deposit(uint256 amount)`: Accepts user deposit and updates internal accounting.
@@ -416,6 +416,24 @@ Reviewer: []
 - `onlyWhitelistedChains(uint64 _chainId)`: Ensures function can only be called for whitelisted chains.
 - `onlyDestinationVault()`: Ensures function can only be called by the destination vault.
 - `onlyExitVault()`: Ensures function can only be called by the exit vault.
+
+#### requestWithdrawal() Function Logic
+
+- **User calls `requestWithdrawal()` function**
+  - **If enough funds are available on the source chain side:**
+    - User gets their tokens back and burns their shares (standard ERC4626 process).
+  - **If not enough funds are available:**
+    - `DepositVault` contract calls a `bridgeAndWithdraw()` function that:
+      - Requests the required tokens back from CCIP, based on the user's proportion of the Net Asset Value (NAV).
+      - Adds the user address to the `withdrawalLimit` mapping in `ExitVault.sol` with a default of zero.
+    - `_ccipReceive()` on the destination chain receives the request for a proportion of tokens (not an absolute amount), and then:
+      - Executes a swap for the user's proportional amount of the deposit asset.
+      - Sends the tokens back to the `ExitVault` contract.
+      - Calls an `updateWithdrawalLimit()` function on `ExitVault` that:
+        - Sets the mapping for the user address to the same value as the number of tokens in the bridging transaction.
+      - Calls an `updateVaultAssets()` function on `ExitVault` that:
+        - Has external access to update the accounting on `SourceVault`.
+
 
 
 **Reviewer**:
