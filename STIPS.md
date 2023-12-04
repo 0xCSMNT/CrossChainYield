@@ -434,6 +434,53 @@ Reviewer: []
       - Calls an `updateVaultAssets()` function on `ExitVault` that:
         - Has external access to update the accounting on `SourceVault`.
 
+### ExitVault Specification
+
+#### Imports & Inheritance
+
+- Inherits `OwnerIsCreator` from CCIP for ownership management.
+- Inherits `IRouterClient` from CCIP for cross-chain communication.
+- Uses `IERC20` from OpenZeppelin for ERC20 token interactions.
+- Uses `Client` from CCIP for client-side functionalities.
+- `LinkTokenInterface` for interacting with Chainlink's LINK tokens. (Note: Requires manual import as it is missing from npm install)
+
+#### Structs
+
+*(No structs specified. Add if any are used within the contract.)*
+
+#### Constants
+
+*(Specify any constants used within the contract here.)*
+
+#### Constructor
+
+*(Constructor details needed, such as initial setup of state variables.)*
+
+#### State Variables
+
+- `IRouterClient router`: Instance of IRouterClient for cross-chain communication.
+- `mapping(uint64 => bool) public whitelistedChains`: Tracks which chains are approved for cross-chain communication.
+- `mapping(address => uint256) public withdrawalLimits`: Records the withdrawal limits for each address.
+
+#### Functions
+
+- `_ccipReceive(bytes memory _data)`: Handles incoming CCIP messages and performs actions based on their content.
+- `whitelistChain(uint64 _chainId)`: Authorizes a chain for cross-chain interactions.
+- `whitelistSender(address _sender)`: Authorizes a sender for initiating transactions.
+- `withdrawFromExitVault(address _beneficiary, uint256 _amount)`: Allows withdrawals from the exit vault up to the withdrawal limit.
+- `updateSourceVaultAccounting()`: Updates the accounting details in the SourceVault contract.
+
+#### Events
+
+- `TokenReceived(address indexed sender, uint256 amount)`: Emitted when tokens are received in the vault.
+- `TokenWithdrawn(address indexed beneficiary, uint256 amount)`: Emitted when tokens are withdrawn from the vault.
+
+#### Modifiers
+
+- `onlyWhitelistedChains(uint64 _chainId)`: Restricts certain actions to approved chains.
+- `onlyWhitelistedSenders(address _sender)`: Restricts certain actions to approved senders.
+
+*(For any gaps in the information, such as specific function arguments, return types, events, and internal logic, consultation with the smart contract development team for comprehensive details is recommended.)*
 
 
 **Reviewer**:
