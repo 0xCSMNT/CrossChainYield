@@ -368,6 +368,28 @@ Before we spec out the contract(s) in depth we want to make sure that we are ali
 
 Reviewer: []
 ## Specification
+
+### Explanation
+
+The chosen design will use CCIP as the underlying messaging protocol. As there are a limited number of tokens enabled for the protocol to date, CCIP-BnM will be used as Asset A on the source chain vault, and that will be bridged to the Destination Chain Vault. Here this will be swapped to an ERC20 of our creation using a Uniswap V2 fork and deposited into another ERC4626.
+
+The vault will be locked during bridging periods to protect from griefing while the value of the underlying is undefined.
+
+A third contract ExitVault will be deployed as an exit queue where users will access their withdrawn funds after a bridging event has been executed to meet their withdrawal request.
+
+### Onchain Spec
+
+- 3 Smart Contracts
+- 1 Chainlink Automation Keeper 
+- 1 Uni V2 Pool 
+
+| Contract         | Chain         | Core Function                         |
+|------------------|---------------|---------------------------------------|
+| SourceVault.sol  | Fuji Testnet  | Deposit Asset Accounting & CCIP       |
+| ExitVault.sol    | Fuji Testnet  | Holding account for withdrawals       |
+| DestinationVault.sol | Sepolia Testnet | Yield Asset Accounting, Uni Swaps & CCIP |
+
+
 ### SourceVault
 
 #### Inheritance & Imports
@@ -434,7 +456,7 @@ Reviewer: []
       - Calls an `updateVaultAssets()` function on `ExitVault` that:
         - Has external access to update the accounting on `SourceVault`.
 
-### ExitVault Specification
+### ExitVault 
 
 #### Imports & Inheritance
 
