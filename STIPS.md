@@ -368,35 +368,55 @@ Before we spec out the contract(s) in depth we want to make sure that we are ali
 
 Reviewer: []
 ## Specification
-### [Contract Name]
-#### Inheritance
-- List inherited contracts
+### SourceVault
+
+#### Inheritance & Imports
+- `OwnerIsCreator` from Chainlink CCIP
+- `IRouterClient` from Chainlink CCIP
+- `IERC20` from OpenZeppelin
+- `Client` from Chainlink CCIP
+- `LinkTokenInterface` from Chainlink Contracts
+- `ERC4626` from Solmate
+
 #### Structs
-| Type 	| Name 	| Description 	|
-|------	|------	|-------------	|
-|address|manager|Address of the manager|
-|uint256|iterations|Number of times manager has called contract|  
+(Define any custom structs that are needed for the contract.)
+
 #### Constants
-| Type 	| Name 	| Description 	| Value 	|
-|------	|------	|-------------	|-------	|
-|uint256|ONE    | The number one| 1       	|
-#### Public Variables
-| Type 	| Name 	| Description 	|
-|------	|------	|-------------	|
-|uint256|hodlers|Number of holders of this token|
+(Define any constants that are used within the contract.)
+
+#### Constructor
+- Arguments for the constructor should include addresses for the router, LINK token, and destination vault.
+- Initializes `router`, `linkToken`, and sets the destination vault address.
+
+#### State Variables
+- `IRouterClient router`: Instance of IRouterClient for cross-chain communication.
+- `LinkTokenInterface linkToken`: Instance of LinkTokenInterface to interact with LINK tokens.
+- `mapping(uint64 => bool) public whitelistedChains`: Tracks the chains that are allowed for cross-chain communication.
+- `Address destinationVault`: Address of the destination vault contract.
+- `uint256 totalAssets()`
+
 #### Functions
-| Name  | Caller  | Description 	|
-|------	|------	|-------------	|
-|startRebalance|Manager|Set rebalance parameters|
-|rebalance|Trader|Rebalance SetToken|
-|ripcord|EOA|Recenter leverage ratio|
+- `deposit(uint256 amount)`: Accepts user deposit and updates internal accounting.
+- `transferTokens(uint64 _destinationChainSelector, address _receiver, address _token, uint256 _amount)`: Transfers tokens and executes a function on the destination chain.
+- `updateAccounting()`: Updates `totalAssets` based on cross-chain messages and internal logic.
+- `whitelistChain(uint64 _chainId)`: Adds a chain to the whitelist.
+- `addExitVault(address _exitVault)`: Links an ExitVault contract to this vault.
+- `denylistChain(uint64 _chainId)`: Removes a chain from the whitelist.
+- `requestWithdrawal(address _asset, uint256 _amount)`: Initiates a withdrawal process that may involve cross-chain actions.
+- `_ccipReceive(bytes _message)`: Receives a message from the CCIP router and performs accounting updates.
+- `exitAndUpdate() external onlyExitVault`: Allows the ExitVault contract to trigger accounting updates.
+- `lockVault() external onlyDestinationVault`: Locks the vault to prevent new deposits during certain operations.
+- `unlockVault() external onlyDestinationVault`: Unlocks the vault to allow new deposits.
+
+#### Events
+- `TokenBridged(address indexed token, uint256 amount)`: Emitted when tokens are successfully bridged.
+- `AccountingUpdated(uint256 totalAssets)`: Emitted when the accounting is updated.
+
 #### Modifiers
-> onlyManager(SetToken _setToken)
-#### Functions
-> issue(SetToken _setToken, uint256 quantity) external
-- Pseudo code
-## Checkpoint 3
-Before we move onto the implementation phase we want to make sure that we are aligned on the spec. All contracts should be specced out, their state and external function signatures should be defined. For more complex contracts, internal function definition is preferred in order to align on proper abstractions. Reviewer should take care to make sure that all stake holders (product, app engineering) have their needs met in this stage.
+- `onlyWhitelistedChains(uint64 _chainId)`: Ensures function can only be called for whitelisted chains.
+- `onlyDestinationVault()`: Ensures function can only be called by the destination vault.
+- `onlyExitVault()`: Ensures function can only be called by the exit vault.
+
 
 **Reviewer**:
 
