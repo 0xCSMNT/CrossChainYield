@@ -482,6 +482,44 @@ Reviewer: []
 
 *(For any gaps in the information, such as specific function arguments, return types, events, and internal logic, consultation with the smart contract development team for comprehensive details is recommended.)*
 
+### DestinationVault
+
+#### Inheritance
+*(Inheritances details needed. List all base contracts that DestinationVault inherits from.)*
+
+#### Structs
+*(Structs details needed if any are used within the contract.)*
+
+#### Constants
+*(Constants details needed. Define any constant values used within the contract.)*
+
+#### Constructor
+*(Constructor details needed, such as initial setup of state variables.)*
+
+#### Public Variables
+- `address ExitVault`: Address of the associated ExitVault.
+- `address SourceVault`: Address of the associated SourceVault.
+
+#### Functions
+- `transferTokensBack(address _token, uint256 _amount, address _to)`: Transfers tokens back to the ExitVault via CCIP.
+- `transferDataBack(bytes memory _data)`: Sends value of assets from swap back to SourceVault via CCIP.
+- `executeDepositSwap(...)`: *(Arguments and description needed)*
+- `executeWithdrawalSwap(...)`: *(Arguments and description needed)*
+- `whitelistChain(uint64 _chainId)`: Authorizes a chain for cross-chain interactions.
+- `addExitVault(address _exitVault)`: Sets the address of the ExitVault.
+- `addSourceVault(address _sourceVault)`: Sets the address of the SourceVault.
+- `denylistChain(uint64 _chainId)`: Revokes authorization for a chain.
+- `_ccipReceive(bytes memory _data)`: Handles incoming CCIP messages.
+
+#### Events
+- `TokensReceived(address indexed from, uint256 amount)`: Logs the receipt of tokens.
+- `SwapExecuted(address indexed tokenIn, address indexed tokenOut, uint256 amountIn, uint256 amountOut)`: Logs execution of a swap.
+- `SwapDataReturnedToSource(bytes data)`: Logs the swap data returned to the SourceVault.
+
+#### Modifiers
+- `onlyWhitelistedChain(uint64 _chainId)`: Restricts certain actions to approved chains.
+- `onlySourceVault()`: Restricts certain actions to the SourceVault.
+
 
 **Reviewer**:
 
