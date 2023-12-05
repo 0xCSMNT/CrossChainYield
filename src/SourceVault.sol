@@ -52,14 +52,18 @@ contract SourceVault is ERC4626, OwnerIsCreator {
     }
 
     // ERC4626 FUNCTIONS
+    
+    // Deposit assets into the vault and mint shares to the user
     function _deposit(uint _assets) public {
-    // Implementation details
-    }
+    require(_assets > 0, "Deposit must be greater than 0");
+    deposit(_assets, msg.sender);
+    shareHolder[msg.sender] += _assets;
+}
 
     function _withdraw(uint _shares, address _receiver) public {
         // Implementation details
     }
-
+ 
     function totalAssets() public view override returns (uint256) {
     return asset.balanceOf(address(this));
     }

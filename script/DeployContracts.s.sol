@@ -7,6 +7,7 @@ import {MockCCIPBnMToken, MockTestToken} from "test/dummy-tokens/TestTokens.sol"
 import {SourceVault} from "src/SourceVault.sol";
 import {ERC20} from "lib/solmate/src/tokens/ERC20.sol";
 
+
 contract DeployContracts is Script {
     MockCCIPBnMToken public mockCCIPBnM;
     MockTestToken public mockTest;
@@ -26,5 +27,6 @@ contract DeployContracts is Script {
             address(0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f), // Dummy router address Anvil 8
             address(0xa0Ee7A142d267C1f36714E4a8F75612F20a79720) // Dummy link token address Anvil 9
         );
+        vm.stopBroadcast();
     }
 }
