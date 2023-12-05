@@ -22,5 +22,9 @@
   "homepage": "https://github.com/0xCSMNT/chainlink-vault#readme",
   "dependencies": {
     "@lifi/sdk": "^2.5.0"
+  },
+  "devDependencies": {
+    "@chainlink/contracts": "^0.8.0",
+    "@chainlink/contracts-ccip": "^0.7.6"
   }
 }
