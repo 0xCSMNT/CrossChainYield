@@ -43,9 +43,20 @@ contract ERC4626Test is StdCheats, Test {
         );
     }
 
-    // test that user can deposit
+    // test that dev account has the correct amount of tokens
+    function testDevAccountBalance() public {
+        assertEq(
+            mockCCIPBnM.balanceOf(DEV_ACCOUNT_0),
+            TOKEN_MINT_BALANCE,
+            "Dev account does not have the correct amount of tokens"
+        );
+    }
+
+    // test that user can approve and deposit
     function testDeposit() public {
        vm.startPrank(DEV_ACCOUNT_0);
+       // approve the transfer
+       mockCCIPBnM.approve(address(sourceVault), TOKEN_TRANSFER_AMOUNT);
        sourceVault._deposit(TOKEN_TRANSFER_AMOUNT);
        vm.stopPrank();
        //assert total assets are equal to the amount deposited
