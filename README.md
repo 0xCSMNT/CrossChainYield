@@ -1,66 +1,86 @@
-## Foundry
+# SourceVault Contract Checklist
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+## Structs
+- [ ] Define any custom structs
 
-Foundry consists of:
+## State Variables
+- [x] `IRouterClient public router`
+- [x] `LinkTokenInterface linkToken`
+- [x] `address public destinationVault`
+- [x] `address public exitVault`
+- [x] `mapping(uint64 => bool) public whitelistedChains`
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Events
+- [x] `event TokenBridged(address indexed token, uint256 amount)`
+- [x] `event AccountingUpdated(uint256 totalAssets)`
 
-## Documentation
+## Modifiers
+- [x] `onlyWhitelistedChains(uint64 _chainId)`
+- [ ] `onlyDestinationVault()`
+- [ ] `onlyExitVault()`
 
-https://book.getfoundry.sh/
+## Constructor
+- [x] Implement constructor with required parameters
 
-## Usage
+## ERC4626 Functions
+- [x] `_deposit(uint _assets)`
+- [x] `_withdraw(uint _shares, address _receiver)`
+    - [ ] Implement logic for when a bridging event is required to withdraw.
+- [x] `totalAssets()`
+- [x] `totalAssetsOfUser(address _user)`
 
-### Build
+## Other Public Functions
+- [ ] `updateAccounting()` called by CCIP message to update assets and shares
+- [x] `whitelistChain(uint64 _chainId)`
+- [x] `denylistChain(uint64 _chainId)`
+- [x] `addExitVault(address _exitVault)`
+- [x] `addDestinationVault(address _destinationVault)`
 
-```shell
-$ forge build
-```
+## CCIP Message Functions
+- [ ] `transferTokensToDestinationVault(uint64 _destinationChainSelector, address _receiver, address _token, uint256 _amount)`
+- [ ] `requestWithdrawalFromDestinationVault(uint64 _destinationChainSelector, address _receiver, address _token, uint256 _amount)`
+- [ ] `_ccipReceive(bytes memory _message)`
 
-### Test
+## Restricted Access Functions
+- [ ] `exitAndUpdate()`
+- [ ] `lockVault()`
+- [ ] `unlockVault()`
 
-```shell
-$ forge test
-```
+# ExitVault Contract Checklist
 
-### Format
+## Structs
+- [ ] Define any custom structs if required
 
-```shell
-$ forge fmt
-```
+## State Variables
+- [x] `IRouterClient public router`
+- [x] `LinkTokenInterface linkToken`
+- [x] `address public sourceVault`
+- [x] `address public destinationVault`
+- [x] `mapping(uint64 => bool) public whitelistedChains`
+- [x] `mapping(address => uint256) public withdrawalLimit`
 
-### Gas Snapshots
+## Events
+- [x] `event TokenReceivedFromBridge(address indexed token, uint256 amount)`
+- [x] `event TokenWithdrawanByCustomer(uint256 amount)`
 
-```shell
-$ forge snapshot
-```
+## Modifiers
+- [x] `onlyWhitelistedChains(uint64 _chainId)`
+- [x] `onlyDestinationVault(address _sender)`
 
-### Anvil
+## Constructor
+- [ ] Implement constructor with required parameters (if necessary)
 
-```shell
-$ anvil
-```
+## Other Public Functions
+- [x] `setSourceVault(address _sourceVault)`
+- [x] `setDestinationVault(address _destinationVault)`
+- [x] `whitelistChain(uint64 _chainId)`
 
-### Deploy
+## CCIP Message Functions
+- [ ] Implement any required CCIP message-related functions
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
+## Restricted Access Functions
+- [ ] Implement any functions restricted to specific roles
 
-### Cast
+## Additional Logic
+- [ ] Implement additional functionalities as per the contract requirements
 
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
