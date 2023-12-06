@@ -37,5 +37,22 @@ contract ExitVault is OwnerIsCreator {
         );
         _;
     }
+
+    // FUNCTIONS
+    
+    // Set the source vault address
+    function setSourceVault(address _sourceVault) external onlyOwner {
+        sourceVault = _sourceVault;
+    }
+    
+    // Set the destination vault address
+    function setDestinationVault(address _destinationVault) external onlyOwner {
+        destinationVault = _destinationVault;
+    }
+    
+    // whitelist chains
+    function whitelistChain(uint64 _chainId) external onlyOwner {
+        whitelistedChains[_chainId] = true;
+    }
         
 }

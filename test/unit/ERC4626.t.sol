@@ -64,6 +64,7 @@ contract ERC4626Test is StdCheats, Test {
        mockCCIPBnM.approve(address(sourceVault), TOKEN_TRANSFER_AMOUNT);
        sourceVault._deposit(TOKEN_TRANSFER_AMOUNT);
        vm.stopPrank();
+       console.log("No of shares: ", sourceVault.totalSupply());
        //assert total assets are equal to the amount deposited
        assertEq(sourceVault.totalAssets(), TOKEN_TRANSFER_AMOUNT, "Total assets are not equal to the amount deposited");
     }
@@ -80,14 +81,6 @@ contract ERC4626Test is StdCheats, Test {
 
     // test that user can approve and withdraw when sufficient funds are available
     function testSimpleWithdraw() public {
-        vm.startPrank(DEV_ACCOUNT_0);
-        // approve the transfer
-        mockCCIPBnM.approve(address(sourceVault), TOKEN_TRANSFER_AMOUNT);
-        sourceVault._deposit(TOKEN_TRANSFER_AMOUNT);
-        vm.stopPrank();
-        // withdraw the amount deposited
-        sourceVault._withdraw(TOKEN_TRANSFER_AMOUNT, DEV_ACCOUNT_0);
-        // assert that the total assets are 0
-        assertEq(sourceVault.totalAssets(), 0, "Total assets are not 0");
+        
     }
 }

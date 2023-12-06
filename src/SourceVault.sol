@@ -25,8 +25,7 @@ contract SourceVault is ERC4626, OwnerIsCreator {
     address public destinationVault;
     address public exitVault;
     
-    mapping(uint64 => bool) public whitelistedChains;
-    mapping(address => uint256) public shareHolder;
+    mapping(uint64 => bool) public whitelistedChains;    
 
     // EVENTS
     event TokenBridged(address indexed token, uint256 amount);
@@ -56,13 +55,11 @@ contract SourceVault is ERC4626, OwnerIsCreator {
     // Deposit assets into the vault and mint shares to the user
     function _deposit(uint _assets) public {
         require(_assets > 0, "Deposit must be greater than 0");
-        deposit(_assets, msg.sender);
-        shareHolder[msg.sender] += _assets; // mints an equal amount of shares to the number of assets deposited
+        deposit(_assets, msg.sender);        
     }
 
-    function _withdraw(uint _shares, address _receiver) public {
-        
-        // Implementation details
+    function _withdraw(uint _shares, address _receiver) public {        
+        // require(_shares > 0, "No funds to withdraw");
     }
  
     function totalAssets() public view override returns (uint256) {
@@ -72,6 +69,8 @@ contract SourceVault is ERC4626, OwnerIsCreator {
     function totalAssetsOfUser(address _user) public view returns (uint256) {
     return asset.balanceOf(_user);
     }
+
+    // OTHER PUBLIC FUNCTIONS
 
     function whitelistChain(uint64 _chainId) public onlyOwner {
         whitelistedChains[_chainId] = true;
