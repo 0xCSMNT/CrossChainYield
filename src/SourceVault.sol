@@ -58,8 +58,14 @@ contract SourceVault is ERC4626, OwnerIsCreator {
         deposit(_assets, msg.sender);        
     }
 
-    function _withdraw(uint _shares, address _receiver) public {        
-        // require(_shares > 0, "No funds to withdraw");
+    function _withdraw(uint _shares, address _receiver) public {
+    require(_shares > 0, "No funds to withdraw");
+
+    // Convert shares to the equivalent amount of assets
+    uint256 assets = previewRedeem(_shares);
+
+    // Withdraw the assets to the receiver's address
+    withdraw(assets, _receiver, msg.sender);
     }
  
     function totalAssets() public view override returns (uint256) {

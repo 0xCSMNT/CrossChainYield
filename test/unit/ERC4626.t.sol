@@ -81,6 +81,16 @@ contract ERC4626Test is StdCheats, Test {
 
     // test that user can approve and withdraw when sufficient funds are available
     function testSimpleWithdraw() public {
+        vm.startPrank(DEV_ACCOUNT_0);
+        mockCCIPBnM.approve(address(sourceVault), TOKEN_TRANSFER_AMOUNT);
+        sourceVault._deposit(TOKEN_TRANSFER_AMOUNT);
         
+        // Calculate the amount of shares based on the deposit
+        uint256 sharesToWithdraw = sourceVault.balanceOf(DEV_ACCOUNT_0);
+        sourceVault._withdraw(sharesToWithdraw, DEV_ACCOUNT_0);
+        vm.stopPrank();        
+
+        // Assert that user has received full amount of fees in return
+        assertEq(mockCCIPBnM.balanceOf(DEV_ACCOUNT_0), TOKEN_MINT_BALANCE);
     }
 }
