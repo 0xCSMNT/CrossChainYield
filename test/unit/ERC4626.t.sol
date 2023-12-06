@@ -19,6 +19,11 @@ contract ERC4626Test is StdCheats, Test {
     uint256 public constant TOKEN_TRANSFER_AMOUNT = 10;
     address public constant DEV_ACCOUNT_0 =
         0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+    address public constant DEV_ACCOUNT_1 = 
+        0x70997970C51812dc3A010C7d01b50e0d17dc79C8; 
+    address public constant DEV_ACCOUNT_2 = 
+        0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC; 
+
 
     // SETUP FUNCTION
     function setUp() external {
@@ -61,5 +66,28 @@ contract ERC4626Test is StdCheats, Test {
        vm.stopPrank();
        //assert total assets are equal to the amount deposited
        assertEq(sourceVault.totalAssets(), TOKEN_TRANSFER_AMOUNT, "Total assets are not equal to the amount deposited");
+    }
+
+    // test total assets are correct before and after deposit
+    function testTotalAssets() public {
+        vm.startPrank(DEV_ACCOUNT_0);
+        assertEq(sourceVault.totalAssets(), 0);
+        mockCCIPBnM.approve(address(sourceVault), TOKEN_TRANSFER_AMOUNT);
+        sourceVault._deposit(TOKEN_TRANSFER_AMOUNT);  
+        assertEq(sourceVault.totalAssets(), TOKEN_TRANSFER_AMOUNT);     
+        vm.stopPrank();
+    }
+
+    // test that user can approve and withdraw when sufficient funds are available
+    function testSimpleWithdraw() public {
+        vm.startPrank(DEV_ACCOUNT_0);
+        // approve the transfer
+        mockCCIPBnM.approve(address(sourceVault), TOKEN_TRANSFER_AMOUNT);
+        sourceVault._deposit(TOKEN_TRANSFER_AMOUNT);
+        vm.stopPrank();
+        // withdraw the amount deposited
+        sourceVault._withdraw(TOKEN_TRANSFER_AMOUNT, DEV_ACCOUNT_0);
+        // assert that the total assets are 0
+        assertEq(sourceVault.totalAssets(), 0, "Total assets are not 0");
     }
 }
