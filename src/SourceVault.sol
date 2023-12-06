@@ -26,10 +26,23 @@ contract SourceVault is ERC4626, OwnerIsCreator {
     address public exitVault;
     bool public vaultLocked;
     
-    mapping(uint64 => bool) public whitelistedChains;    
+    mapping(uint64 => bool) public whitelistedChains;
+
+    // ERRORS
+    error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); 
+    error DestinationChainNotWhitelisted(uint64 destinationChainSelector);
+    error NothingToWithdraw();    
 
     // EVENTS
-    event TokenBridged(address indexed token, uint256 amount);
+    event TokensTransferred(
+        bytes32 indexed messageId, // The unique ID of the message.
+        uint64 indexed destinationChainSelector, // The chain selector of the destination chain.
+        address receiver, // The address of the receiver on the destination chain.
+        address token, // The token address that was transferred.
+        uint256 tokenAmount, // The token amount that was transferred.
+        address feeToken, // the token address used to pay CCIP fees.
+        uint256 fees // The fees paid for sending the message.
+    );
     event AccountingUpdated(uint256 totalAssets);
 
     // MODIFIERS
@@ -97,9 +110,61 @@ contract SourceVault is ERC4626, OwnerIsCreator {
         destinationVault = _destinationVault;
     }
     
-    // CCIP MESSAGE FUNCTIONS
-    function transferTokensToDestinationVault(uint64 _destinationChainSelector, address _receiver, address _token, uint256 _amount) public {
-        // Token transfer implementation
+    // CCIP MESSAGE FUNCTIONS    
+
+    function transferTokensToDestinationVault(
+        uint64 _destinationChainSelector,
+        address _receiver,
+        address _token,
+        uint256 _amount
+    ) 
+        external
+        onlyOwner
+        onlyWhitelistedChains(_destinationChainSelector)
+        returns (bytes32 messageId) 
+    {
+        Client.EVMTokenAmount[]
+            memory tokenAmounts = new Client.EVMTokenAmount[](1);
+        Client.EVMTokenAmount memory tokenAmount = Client.EVMTokenAmount({
+            token: _token,
+            amount: _amount
+        });
+        tokenAmounts[0] = tokenAmount;
+        
+        // Build the CCIP Message
+        Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
+            receiver: abi.encode(_receiver),
+            data: abi.encodeWithSignature("test message", msg.sender),
+            tokenAmounts: tokenAmounts,
+            extraArgs: Client._argsToBytes(
+                Client.EVMExtraArgsV1({gasLimit: 200_000, strict: false})
+            ),
+            feeToken: address(linkToken)
+        });
+        
+        // CCIP Fees Management
+        uint256 fees = router.getFee(_destinationChainSelector, message);
+
+        if (fees > linkToken.balanceOf(address(this)))
+            revert NotEnoughBalance(linkToken.balanceOf(address(this)), fees);
+
+        linkToken.approve(address(router), fees);
+        
+        // Approve Router to spend CCIP-BnM tokens we send
+        IERC20(_token).approve(address(router), _amount);
+        
+        // Send CCIP Message
+        messageId = router.ccipSend(_destinationChainSelector, message); 
+        
+        emit TokensTransferred(
+            messageId,
+            _destinationChainSelector,
+            _receiver,
+            _token,
+            _amount,
+            address(linkToken),
+            fees
+        );   
     }
 
     function requestWithdrawalFromDestinationVault(uint64 _destinationChainSelector, address _receiver, address _token, uint256 _amount) public {
