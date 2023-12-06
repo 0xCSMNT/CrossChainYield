@@ -8,7 +8,6 @@ import {SourceVault} from "src/SourceVault.sol";
 import {ExitVault} from "src/ExitVault.sol";
 import {ERC20} from "lib/solmate/src/tokens/ERC20.sol";
 
-
 contract DeployContracts is Script {
     MockCCIPBnMToken public mockCCIPBnM;
     MockTestToken public mockTest;
@@ -32,7 +31,7 @@ contract DeployContracts is Script {
             address(mockLink) // Dummy Link Token
         );
         exitVault = new ExitVault();
-        exitVault.setSourceVault(address(sourceVault));
+        exitVault.setSourceVault(address(sourceVault));        
         vm.stopBroadcast();
     }
 }

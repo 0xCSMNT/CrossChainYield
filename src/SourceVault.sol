@@ -24,6 +24,7 @@ contract SourceVault is ERC4626, OwnerIsCreator {
     LinkTokenInterface linkToken;
     address public destinationVault;
     address public exitVault;
+    bool public vaultLocked;
     
     mapping(uint64 => bool) public whitelistedChains;    
 
@@ -54,26 +55,28 @@ contract SourceVault is ERC4626, OwnerIsCreator {
     
     // Deposit assets into the vault and mint shares to the user
     function _deposit(uint _assets) public {
+        require(!vaultLocked, "Vault is locked");
         require(_assets > 0, "Deposit must be greater than 0");
         deposit(_assets, msg.sender);        
     }
 
     function _withdraw(uint _shares, address _receiver) public {
-    require(_shares > 0, "No funds to withdraw");
+        require(!vaultLocked, "Vault is locked");
+        require(_shares > 0, "No funds to withdraw");
 
-    // Convert shares to the equivalent amount of assets
-    uint256 assets = previewRedeem(_shares);
+        // Convert shares to the equivalent amount of assets
+        uint256 assets = previewRedeem(_shares);
 
-    // Withdraw the assets to the receiver's address
-    withdraw(assets, _receiver, msg.sender);
+        // Withdraw the assets to the receiver's address
+        withdraw(assets, _receiver, msg.sender);
     }
  
     function totalAssets() public view override returns (uint256) {
-    return asset.balanceOf(address(this));
+        return asset.balanceOf(address(this));
     }
 
     function totalAssetsOfUser(address _user) public view returns (uint256) {
-    return asset.balanceOf(_user);
+        return asset.balanceOf(_user);
     }
 
     // OTHER PUBLIC FUNCTIONS
@@ -114,9 +117,17 @@ contract SourceVault is ERC4626, OwnerIsCreator {
 
     function lockVault() internal {
         // Vault locking logic
+        vaultLocked = true;
     }
 
     function unlockVault() external /* TODO: onlyDestinationVault */ {
         // Vault unlocking logic
+        vaultLocked = false;
     }
+
+    // DELETE BEFORE DEPLOYMENT
+    function externalLockVault() external onlyOwner {
+        lockVault();
+    }
+
 }

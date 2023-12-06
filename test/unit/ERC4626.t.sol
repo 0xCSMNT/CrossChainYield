@@ -93,4 +93,16 @@ contract ERC4626Test is StdCheats, Test {
         // Assert that user has received full amount of fees in return
         assertEq(mockCCIPBnM.balanceOf(DEV_ACCOUNT_0), TOKEN_MINT_BALANCE);
     }
+
+    // NOT WORKING: test that the vault can be locked
+    function testLockVault() public {
+        vm.startPrank(DEV_ACCOUNT_0);        
+        sourceVault.externalLockVault();
+        vm.expectRevert("Vault is locked");
+        mockCCIPBnM.approve(address(sourceVault), TOKEN_TRANSFER_AMOUNT);
+        sourceVault._deposit(TOKEN_TRANSFER_AMOUNT);
+        
+    }
+
+    // test that the vault can be unlocked
 }

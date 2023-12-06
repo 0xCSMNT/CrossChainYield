@@ -42,9 +42,10 @@
 - [ ] `_ccipReceive(bytes memory _message)`
 
 ## Restricted Access Functions
-- [ ] `exitAndUpdate()`
-- [ ] `lockVault()`
-- [ ] `unlockVault()`
+- [ ] `exitAndUpdate()` called by ExitVault on final customer withdrawal
+- [x] `lockVault()`
+- [x] `unlockVault()`
+- [x] delete `externalLockVault()`
 
 # ExitVault Contract Checklist
 
