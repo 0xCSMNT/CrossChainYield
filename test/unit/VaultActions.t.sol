@@ -114,10 +114,29 @@ contract ERC4626Test is StdCheats, Test {
     // test that MockDestinationVault can receive tokens from SourceVault
     function testDestinationVaultReceivesTokens() public {
         vm.startPrank(DEV_ACCOUNT_0);
+
         mockCCIPBnM.approve(address(sourceVault), TOKEN_TRANSFER_AMOUNT);
         sourceVault._deposit(TOKEN_TRANSFER_AMOUNT);
         vm.stopPrank();
-        // check that the mockDestinationVault has received the tokens
-        assertEq(mockCCIPBnM.balanceOf(address(mockDestinationVault)), TOKEN_TRANSFER_AMOUNT);
+
+        sourceVault.testTransferTokensToDestinationVault();
+
+        assertEq(mockCCIPBnM.balanceOf(address(mockDestinationVault)), TOKEN_TRANSFER_AMOUNT);       
+        
+    }
+
+    function testDestinationVaultReceivesTokensAndDoesFakeSwap() public {
+        vm.startPrank(DEV_ACCOUNT_0);
+
+        mockCCIPBnM.approve(address(sourceVault), TOKEN_TRANSFER_AMOUNT);
+        sourceVault._deposit(TOKEN_TRANSFER_AMOUNT);
+        vm.stopPrank();
+
+        sourceVault.testTransferTokensToDestinationVault();
+
+        console.log("mockDestinationVault fakeBalance: ", mockDestinationVault.fakeBalance());
+
+        assertEq(mockDestinationVault.fakeBalance(), TOKEN_TRANSFER_AMOUNT * 950000000000000000 / 1e18);     
+        
     }
 }

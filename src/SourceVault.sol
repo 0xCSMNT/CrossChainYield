@@ -30,6 +30,7 @@ contract SourceVault is ERC4626, OwnerIsCreator {
     uint256 public DestinationVaultBalance;
 
     IMockDestinationVault public mockDestinationVault;
+    address public mockDestinationVaultAddress;
     
     mapping(uint64 => bool) public whitelistedChains;
 
@@ -49,6 +50,9 @@ contract SourceVault is ERC4626, OwnerIsCreator {
         uint256 fees // The fees paid for sending the message.
     );
     event AccountingUpdated(uint256 totalAssets);
+    event TEST_TokensTransferredToDestinationVault(uint256 amount);
+    event FunctionCalledBy(address caller);
+
 
     // MODIFIERS
     modifier onlyWhitelistedChains(uint64 _chainId) { 
@@ -131,16 +135,26 @@ contract SourceVault is ERC4626, OwnerIsCreator {
     function addDestinationVault(address _destinationVault) public onlyOwner {
         destinationVault = _destinationVault;
     }
+
+    function addMockDestinationVault(address _mockDestinationVault) public onlyOwner {
+        mockDestinationVault = IMockDestinationVault(_mockDestinationVault);
+    }
     
     // CCIP MESSAGE FUNCTIONS    
 
-    function transferTokensToDestinationVault(uint256 _amount) external  {
-        // Transfer tokens to destination vault
-        // Take a value as input
-        // Transfer to DestinationVault
-        // Call swapAndAppendBalance on Destination Vault
+    // TODO: IMPLEMENT THIS FUNCTION PROPERLY WITH CCIP
+    function testTransferTokensToDestinationVault() public {
+        emit FunctionCalledBy(msg.sender);
+        uint256 balance = asset.balanceOf(address(this));
+        require(balance > 0, "No tokens to transfer");
 
-    }
+        // Transfer tokens to destination vault
+        SafeTransferLib.safeTransfer(asset, address(mockDestinationVault), balance);
+
+        mockDestinationVault.swapAndAppendBalance(balance);
+        emit TEST_TokensTransferredToDestinationVault(balance);
+        
+}
 
     function requestWithdrawalFromDestinationVault(uint64 _destinationChainSelector, address _receiver, address _token, uint256 _amount) public {
         // Withdrawal request implementation

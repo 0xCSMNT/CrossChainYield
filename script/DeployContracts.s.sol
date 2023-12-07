@@ -34,8 +34,11 @@ contract DeployContracts is Script {
         exitVault = new ExitVault();
         exitVault.setSourceVault(address(sourceVault));
 
-        mockDestinationVault = new MockDestinationVault(address(mockCCIPBnM), address(mockTest));
+        mockDestinationVault = new MockDestinationVault(address(mockCCIPBnM));
         mockDestinationVault.setSourceVault(address(sourceVault));
+
+        // set the destination vault address in the source vault
+        sourceVault.addMockDestinationVault(address(mockDestinationVault));
                 
         vm.stopBroadcast();
     }
