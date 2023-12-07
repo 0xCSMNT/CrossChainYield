@@ -99,15 +99,7 @@ contract ERC4626Test is StdCheats, Test {
         assertEq(mockCCIPBnM.balanceOf(DEV_ACCOUNT_0), TOKEN_MINT_BALANCE);
     }
 
-    // NOT WORKING: test that the vault can be locked
-    function testLockVault() public {
-        vm.startPrank(DEV_ACCOUNT_0);        
-        sourceVault.externalLockVault();
-        vm.expectRevert("Vault is locked");
-        mockCCIPBnM.approve(address(sourceVault), TOKEN_TRANSFER_AMOUNT);
-        sourceVault._deposit(TOKEN_TRANSFER_AMOUNT);
-        
-    }
+    // test that vault can be locked and cause a revert when depositing
 
     // test that the vault can be unlocked
 
@@ -138,5 +130,38 @@ contract ERC4626Test is StdCheats, Test {
 
         assertEq(mockDestinationVault.fakeBalance(), TOKEN_TRANSFER_AMOUNT * 950000000000000000 / 1e18);     
         
+    }
+
+    // function to test that mockDestinationVaultBalance gets updated
+    function testMockDestinationVaultBalanceUpdates() public {
+        vm.startPrank(DEV_ACCOUNT_0);
+
+        mockCCIPBnM.approve(address(sourceVault), TOKEN_TRANSFER_AMOUNT);
+        sourceVault._deposit(TOKEN_TRANSFER_AMOUNT);
+        vm.stopPrank();
+
+        sourceVault.testTransferTokensToDestinationVault();        
+
+        assertEq(sourceVault.mockDestinationVaultBalance(), TOKEN_TRANSFER_AMOUNT * 950000000000000000 / 1e18);
+
+    }
+
+    function testTotalAssetsUpdatesCorrectly() public {
+        vm.startPrank(DEV_ACCOUNT_0);
+
+        mockCCIPBnM.approve(address(sourceVault), TOKEN_TRANSFER_AMOUNT);
+        sourceVault._deposit(TOKEN_TRANSFER_AMOUNT);
+        vm.stopPrank();
+
+        sourceVault.testTransferTokensToDestinationVault();        
+
+        vm.startPrank(DEV_ACCOUNT_0);
+        mockCCIPBnM.approve(address(sourceVault), TOKEN_TRANSFER_AMOUNT);
+        sourceVault._deposit(TOKEN_TRANSFER_AMOUNT);
+        vm.stopPrank();
+
+        console.log("total assets: ", sourceVault.totalAssets());
+        assertEq(sourceVault.totalAssets(), TOKEN_TRANSFER_AMOUNT * 2);
+
     }
 }

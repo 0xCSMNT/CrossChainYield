@@ -4,6 +4,8 @@ pragma solidity ^0.8.20;
 import {ERC20} from "lib/solmate/src/tokens/ERC20.sol";
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol";
 import {IMockDestinationVault} from "interfaces/IMockDestinationVault.sol";
+import {ISourceVault} from "interfaces/ISourceVault.sol";
+
 // import "node_modules/@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 
 contract MockCCIPBnMToken is ERC20 {
@@ -35,14 +37,18 @@ contract MockDestinationVault is IMockDestinationVault {
         mockCCIPBnM = IERC20(_mockCCIPBnM);                
     }
  
-    // function updates fakeBalance based on exchange rate and amount of tokens received
+    // This function is on MockDestinationVault and 
+    // updates fakeBalance based on exchange rate and amount of tokens received
     // but no token swaps actually take place
     function swapAndAppendBalance(uint256 mockCCIPBnMAmount) external {
         // checks caller is sourceVault - maybe delete and use a modifier later but this is fine for tesing
         require(msg.sender == sourceVault, "Caller is not SourceVault");         
         
         uint256 balanceUpdate = mockCCIPBnMAmount * getExchangeRate() / 1e18;
-        fakeBalance += balanceUpdate;        
+        fakeBalance += balanceUpdate;
+        
+        // Call SourceVault to update the balance
+        ISourceVault(sourceVault).updateBalanceFromMockDestinationVault(fakeBalance);   
     }
 
      // Function to set the source vault address
@@ -56,7 +62,6 @@ contract MockDestinationVault is IMockDestinationVault {
         return 950000000000000000;
     }
 }
-
    
 
 contract MockTokenDeployer {    

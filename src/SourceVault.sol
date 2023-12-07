@@ -4,20 +4,19 @@ pragma solidity 0.8.20;
 import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";
 import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
-
 import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 import {SafeTransferLib} from "lib/solmate/src/utils/SafeTransferLib.sol";
 import {FixedPointMathLib} from "lib/solmate/src/utils/FixedPointMathLib.sol";
-
 import {ERC20} from "lib/solmate/src/tokens/ERC20.sol";
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol";
 import {ERC4626} from "lib/solmate/src/mixins/ERC4626.sol";
 
 import {IMockDestinationVault} from "interfaces/IMockDestinationVault.sol";
+import {ISourceVault} from "interfaces/ISourceVault.sol";
 
 // TODO: CREATE PROPER CONTRACT DESCRIPTION
 
-contract SourceVault is ERC4626, OwnerIsCreator {
+contract SourceVault is ERC4626, OwnerIsCreator, ISourceVault {
     
     // STRUCTS
     
@@ -29,8 +28,10 @@ contract SourceVault is ERC4626, OwnerIsCreator {
     bool public vaultLocked;
     uint256 public DestinationVaultBalance;
 
+    // Mock Variables - delete before deployment
     IMockDestinationVault public mockDestinationVault;
     address public mockDestinationVaultAddress;
+    uint256 public mockDestinationVaultBalance;
     
     mapping(uint64 => bool) public whitelistedChains;
 
@@ -52,6 +53,7 @@ contract SourceVault is ERC4626, OwnerIsCreator {
     event AccountingUpdated(uint256 totalAssets);
     event TEST_TokensTransferredToDestinationVault(uint256 amount);
     event FunctionCalledBy(address caller);
+    event MockBalanceUpdated(uint256 newBalance);
 
 
     // MODIFIERS
@@ -60,9 +62,15 @@ contract SourceVault is ERC4626, OwnerIsCreator {
         _;
      }
     
-    // TODO: Implement these modifiers
-    // modifier onlyDestinationVault() { ... }
-    // modifier onlyExitVault() { ... }
+    modifier onlyDestinationVault(address _destinationVault) {
+        require(msg.sender == _destinationVault, "Caller is not DestinationVault");
+        _;
+    }
+
+    modifier onlyExitVault(address _exitVault) {
+        require(msg.sender == _exitVault, "Caller is not ExitVault");
+        _;
+    }
 
     // CONSTRUCTOR
     constructor(ERC20 _asset, string memory _name, string memory _symbol, address _router, address _link)
@@ -92,22 +100,16 @@ contract SourceVault is ERC4626, OwnerIsCreator {
         // Withdraw the assets to the receiver's address
         withdraw(assets, _receiver, msg.sender);
     }
- 
-      
     
+
     function totalAssets() public view override returns (uint256) {  
-
-        // TODO: WRITE THIS FUNCTION
-
-        // get balance of DestinationVault
-        // get asset.balanceOf(address(this))
-        // get exchange rate
-        // calculate total value in terms of `asset` based on combined value and accounting for exchange rate
-        // call this value totalValue
-        // return TotalValue
-        return asset.balanceOf(address(this)); // TODO: REPLACE THIS LINE
+        uint256 _depositAssetBalance = asset.balanceOf(address(this));
+        uint256 _destinationVaultBalance = FixedPointMathLib.mulDivUp(mockDestinationVaultBalance, 1e18, getExchangeRate());
+        uint256 _totalAssets = _depositAssetBalance + _destinationVaultBalance;
+        return _totalAssets;              
     }
 
+    // TODO: PROB NEED SOME KIND OF ACCOUNTING CHANGE HERE TOO
     function totalAssetsOfUser(address _user) public view returns (uint256) {
         return asset.balanceOf(_user);
     }
@@ -152,8 +154,7 @@ contract SourceVault is ERC4626, OwnerIsCreator {
         SafeTransferLib.safeTransfer(asset, address(mockDestinationVault), balance);
 
         mockDestinationVault.swapAndAppendBalance(balance);
-        emit TEST_TokensTransferredToDestinationVault(balance);
-        
+        emit TEST_TokensTransferredToDestinationVault(balance);        
 }
 
     function requestWithdrawalFromDestinationVault(uint64 _destinationChainSelector, address _receiver, address _token, uint256 _amount) public {
@@ -165,11 +166,18 @@ contract SourceVault is ERC4626, OwnerIsCreator {
     }
 
     // RESTRICTED ACCESS FUNCTIONS
-    function updateBalanceFromDestinationVault() external /* TO onlyDestinationVault */ {
+    function updateBalanceFromDestinationVault() external /* TODO: onlyDestinationVault */ {
         
-        // TODO: RECEIVES VALUE FROM DESTINATION VAULT AND UPDATES DestinationVaultBalance
-        // FOR NOW WRITE IT SO IT JUST RECEIVES A VALUE FROM DESTINATION VAULT
+        //TODO: IMPLEMENT THIS FUNCTION PROPERLY WITH CCIP
     }
+
+    // In SourceVault contract
+    function updateBalanceFromMockDestinationVault(uint256 _newBalance) external {
+        // TODO: Add access control to ensure only MockDestinationVault can call this function
+        mockDestinationVaultBalance = _newBalance;
+        emit MockBalanceUpdated(_newBalance); // Consider adding an event for tracking
+}
+
     
     
     function updateAccountingAndExit() external {
