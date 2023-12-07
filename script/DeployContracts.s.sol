@@ -3,7 +3,7 @@
 pragma solidity 0.8.20;
 
 import {Script, console} from "forge-std/Script.sol";
-import {MockCCIPBnMToken, MockTestToken, MockLinkToken} from "test/dummy-tokens/TestTokens.sol";
+import {MockCCIPBnMToken, MockTestToken, MockLinkToken, MockDestinationVault} from "test/dummy-tokens/TestTokens.sol";
 import {SourceVault} from "src/SourceVault.sol";
 import {ExitVault} from "src/ExitVault.sol";
 import {ERC20} from "lib/solmate/src/tokens/ERC20.sol";
@@ -14,6 +14,7 @@ contract DeployContracts is Script {
     MockLinkToken public mockLink;
     SourceVault public sourceVault;
     ExitVault public exitVault;
+    MockDestinationVault public mockDestinationVault;
 
     function run() external {
         vm.startBroadcast();
@@ -31,7 +32,11 @@ contract DeployContracts is Script {
             address(mockLink) // Dummy Link Token
         );
         exitVault = new ExitVault();
-        exitVault.setSourceVault(address(sourceVault));        
+        exitVault.setSourceVault(address(sourceVault));
+
+        mockDestinationVault = new MockDestinationVault(address(mockCCIPBnM), address(mockTest));
+        mockDestinationVault.setSourceVault(address(sourceVault));
+                
         vm.stopBroadcast();
     }
 }
