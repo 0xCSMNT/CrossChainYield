@@ -13,6 +13,8 @@ import {ERC20} from "lib/solmate/src/tokens/ERC20.sol";
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol";
 import {ERC4626} from "lib/solmate/src/mixins/ERC4626.sol";
 
+import {IMockDestinationVault} from "interfaces/IMockDestinationVault.sol";
+
 // TODO: CREATE PROPER CONTRACT DESCRIPTION
 
 contract SourceVault is ERC4626, OwnerIsCreator {
@@ -25,6 +27,9 @@ contract SourceVault is ERC4626, OwnerIsCreator {
     address public destinationVault;
     address public exitVault;
     bool public vaultLocked;
+    uint256 public DestinationVaultBalance;
+
+    IMockDestinationVault public mockDestinationVault;
     
     mapping(uint64 => bool) public whitelistedChains;
 
@@ -84,8 +89,19 @@ contract SourceVault is ERC4626, OwnerIsCreator {
         withdraw(assets, _receiver, msg.sender);
     }
  
-    function totalAssets() public view override returns (uint256) {
-        return asset.balanceOf(address(this));
+      
+    
+    function totalAssets() public view override returns (uint256) {  
+
+        // TODO: WRITE THIS FUNCTION
+
+        // get balance of DestinationVault
+        // get asset.balanceOf(address(this))
+        // get exchange rate
+        // calculate total value in terms of `asset` based on combined value and accounting for exchange rate
+        // call this value totalValue
+        // return TotalValue
+        return asset.balanceOf(address(this)); // TODO: REPLACE THIS LINE
     }
 
     function totalAssetsOfUser(address _user) public view returns (uint256) {
@@ -93,6 +109,12 @@ contract SourceVault is ERC4626, OwnerIsCreator {
     }
 
     // OTHER PUBLIC FUNCTIONS
+
+    function getExchangeRate() internal pure returns (uint256) {
+        return 950000000000000000; // This represents 0.98 in fixed-point arithmetic with 18 decimal places
+
+        // TODO: FINISH THIS LATER TO ACCESS AN ORACLE
+    }
 
     function whitelistChain(uint64 _chainId) public onlyOwner {
         whitelistedChains[_chainId] = true;
@@ -112,59 +134,12 @@ contract SourceVault is ERC4626, OwnerIsCreator {
     
     // CCIP MESSAGE FUNCTIONS    
 
-    function transferTokensToDestinationVault(
-        uint64 _destinationChainSelector,
-        address _receiver,
-        address _token,
-        uint256 _amount
-    ) 
-        external
-        onlyOwner
-        onlyWhitelistedChains(_destinationChainSelector)
-        returns (bytes32 messageId) 
-    {
-        Client.EVMTokenAmount[]
-            memory tokenAmounts = new Client.EVMTokenAmount[](1);
-        Client.EVMTokenAmount memory tokenAmount = Client.EVMTokenAmount({
-            token: _token,
-            amount: _amount
-        });
-        tokenAmounts[0] = tokenAmount;
-        
-        // Build the CCIP Message
-        Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
-            receiver: abi.encode(_receiver),
-            data: abi.encodeWithSignature("test message", msg.sender),
-            tokenAmounts: tokenAmounts,
-            extraArgs: Client._argsToBytes(
-                Client.EVMExtraArgsV1({gasLimit: 200_000, strict: false})
-            ),
-            feeToken: address(linkToken)
-        });
-        
-        // CCIP Fees Management
-        uint256 fees = router.getFee(_destinationChainSelector, message);
+    function transferTokensToDestinationVault(uint256 _amount) external  {
+        // Transfer tokens to destination vault
+        // Take a value as input
+        // Transfer to DestinationVault
+        // Call swapAndAppendBalance on Destination Vault
 
-        if (fees > linkToken.balanceOf(address(this)))
-            revert NotEnoughBalance(linkToken.balanceOf(address(this)), fees);
-
-        linkToken.approve(address(router), fees);
-        
-        // Approve Router to spend CCIP-BnM tokens we send
-        IERC20(_token).approve(address(router), _amount);
-        
-        // Send CCIP Message
-        messageId = router.ccipSend(_destinationChainSelector, message); 
-        
-        emit TokensTransferred(
-            messageId,
-            _destinationChainSelector,
-            _receiver,
-            _token,
-            _amount,
-            address(linkToken),
-            fees
-        );   
     }
 
     function requestWithdrawalFromDestinationVault(uint64 _destinationChainSelector, address _receiver, address _token, uint256 _amount) public {
@@ -176,8 +151,18 @@ contract SourceVault is ERC4626, OwnerIsCreator {
     }
 
     // RESTRICTED ACCESS FUNCTIONS
-    function exitAndUpdate() external /* TODO onlyExitVault */ {
-        // ExitVault update logic
+    function updateBalanceFromDestinationVault() external /* TO onlyDestinationVault */ {
+        
+        // TODO: RECEIVES VALUE FROM DESTINATION VAULT AND UPDATES DestinationVaultBalance
+        // FOR NOW WRITE IT SO IT JUST RECEIVES A VALUE FROM DESTINATION VAULT
+    }
+    
+    
+    function updateAccountingAndExit() external {
+
+        // WORK ON THIS FUNCTION LATER - GET THE DEPOSIT FLOW FIGURED OUT FIRST AND IGNORE WITHDRAWALS UNTIL THAT IS INTEGRATED WITH CCIP
+        // This function is for when a customer exits the the vault and removes their funds
+        
     }
 
     function lockVault() internal {

@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import {ERC20} from "lib/solmate/src/tokens/ERC20.sol";
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol";
+import {IMockDestinationVault} from "interfaces/IMockDestinationVault.sol";
 // import "node_modules/@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 
 contract MockCCIPBnMToken is ERC20 {
@@ -23,7 +24,7 @@ contract MockLinkToken is ERC20 {
     }
 }
 
-contract MockDestinationVault {
+contract MockDestinationVault is IMockDestinationVault {
     IERC20 public mockCCIPBnM;
     IERC20 public mockTestToken;
 
@@ -63,7 +64,8 @@ contract MockDestinationVault {
         // SourceVault(sourceVault).updateBalanceFromDestination(address(this), balanceInMockTestToken);
     }
 }
-    
+
+   
 
 contract MockTokenDeployer {    
     MockCCIPBnMToken public mockCCIPBnM;

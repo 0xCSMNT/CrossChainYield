@@ -30,7 +30,7 @@ contract ExitVault is OwnerIsCreator {
         _;
     }
 
-    modifier onlyDestinationVault(address _sender) {
+    modifier onlyDestinationVault() {
         require(
             msg.sender == destinationVault,
             "Only the destination vault can call this function"
@@ -39,6 +39,14 @@ contract ExitVault is OwnerIsCreator {
     }
 
     // FUNCTIONS
+
+    // Set a customer withdrawal limit so they can withdraw funds
+    function increaseWithdrawalLimit(address customer, uint256 limitIncrease) external onlyDestinationVault {
+        withdrawalLimit[customer] += limitIncrease;
+    }
+
+    // have an executeWithdrawal() function that can be call by customer
+        // should set withdraw limit back to zero for that address
     
     // Set the source vault address
     function setSourceVault(address _sourceVault) external onlyOwner {

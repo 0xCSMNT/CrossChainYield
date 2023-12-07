@@ -3,16 +3,19 @@
 pragma solidity 0.8.20;
 
 import {SourceVault} from "src/SourceVault.sol";
-import {MockCCIPBnMToken, MockTestToken} from "test/dummy-tokens/TestTokens.sol";
+import {MockCCIPBnMToken, MockTestToken, MockLinkToken, MockDestinationVault} from "test/dummy-tokens/TestTokens.sol";
 import {Test, console} from "forge-std/Test.sol";
 import {StdCheats} from "forge-std/StdCheats.sol";
 import {DeployContracts} from "script/DeployContracts.s.sol";
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol";
+import {IMockDestinationVault} from "interfaces/IMockDestinationVault.sol";
 
 contract ERC4626Test is StdCheats, Test {
     SourceVault public sourceVault;
     MockCCIPBnMToken public mockCCIPBnM;
     MockTestToken public mockTest;
+    MockLinkToken public mockLink;
+    MockDestinationVault public mockDestinationVault;
 
     // CONSTANTS
     uint256 public constant TOKEN_MINT_BALANCE = 100;
@@ -34,6 +37,8 @@ contract ERC4626Test is StdCheats, Test {
         sourceVault = deployer.sourceVault();
         mockCCIPBnM = deployer.mockCCIPBnM();
         mockTest = deployer.mockTest();
+        mockLink = deployer.mockLink();
+        mockDestinationVault = deployer.mockDestinationVault();
     }
 
     ////////// HELPER FUNCTIONS //////////
@@ -105,4 +110,14 @@ contract ERC4626Test is StdCheats, Test {
     }
 
     // test that the vault can be unlocked
+
+    // test that MockDestinationVault can receive tokens from SourceVault
+    function testDestinationVaultReceivesTokens() public {
+        vm.startPrank(DEV_ACCOUNT_0);
+        mockCCIPBnM.approve(address(sourceVault), TOKEN_TRANSFER_AMOUNT);
+        sourceVault._deposit(TOKEN_TRANSFER_AMOUNT);
+        vm.stopPrank();
+        // check that the mockDestinationVault has received the tokens
+        assertEq(mockCCIPBnM.balanceOf(address(mockDestinationVault)), TOKEN_TRANSFER_AMOUNT);
+    }
 }
