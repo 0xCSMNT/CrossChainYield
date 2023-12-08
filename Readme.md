@@ -21,7 +21,7 @@ To test,
 
 * You can send BnM to the contract via an EOA directly on sepolia and call the functions above.
 
-* You can also send BnM via Fuji or another chain and then test. Make sure to whitelist the source address and chain via 'allowlistsender()' and 'allowlistChain()'. 
+* You can also send BnM via Fuji or another chain and then test. Make sure to whitelist the source address and chain via `allowlistsender()` and `allowSourceChain()`. 
 
 
 
