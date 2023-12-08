@@ -15,7 +15,7 @@ CCIP-DAI, is a test yield token deployed to swap test tokens against, on a Uniwa
 
 Calling `swapBaseBalanceToYield()` will swap all the base asset balance to the yield asset. This function has a `onlyOwner()` modifier. 
 
-Calling `sendYieldBalancePayLINK` will send the Yield Asset balance (converted to String) to the the source vault on the source chain. 
+Calling `sendYieldBalancePayLINK` will send the Yield Asset balance (converted to String) to the the source vault on the source chain. The contract should also have LINK balance to pay for CCIP fees. 
 
 To test, 
 
