@@ -11,7 +11,7 @@ Destination vault accepts CCIP transfers and keeps the token balance updated.
 
 CCIP-BnM, the CCIP test token, is the *Base* asset. 
 
-CCIP-DAI, is a test yield token deployed to swap test tokens against, on a Uniwap V2 pool setup on Sepolia. 
+CCIP-DAI, is a test yield token deployed to swap test tokens against, on a Uniwap V2 pool setup on Sepolia. It is the *yeild* asset. 
 
 Calling `swapBaseBalanceToYield()` will swap all the base asset balance to the yield asset. This function has a `onlyOwner()` modifier. 
 
