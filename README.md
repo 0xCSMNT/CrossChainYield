@@ -1,3 +1,12 @@
+# Clean up
+- [ ] Figure out CCIP
+- [ ] Deploy and seed Uniswap pool
+- [ ] Connect to Chainlink oracle for price
+- [ ] Refactor Code to fit in CCIP
+- [ ] Create both keepers
+- [ ] Go over below checklist again top to bottom, add in more checks for new contracts
+- [ ] create deploy scripts
+
 # SourceVault Contract Checklist
 
 ## Structs
@@ -27,7 +36,7 @@
 - [x] `_withdraw(uint _shares, address _receiver)`
     - [ ] Implement logic for when a bridging event is required to withdraw.
 - [x] `totalAssets()`
-- [x] `totalAssetsOfUser(address _user)`
+- [ ] `totalAssetsOfUser(address _user)`
 
 ## Other Public Functions
 - [ ] `updateAccounting()` called by CCIP message to update assets and shares
