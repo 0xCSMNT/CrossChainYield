@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.20;
+pragma solidity ^0.8.0;
 
-import {Script, console} from "forge-std/Script.sol";
-import {MockDestinationVault} from "test/dummy-tokens/TestTokens.sol";
+import {Script, console} from "lib/forge-std/src/Script.sol";
 import {SourceVault} from "src/SourceVault.sol";
 import {ERC20} from "lib/solmate/src/tokens/ERC20.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
@@ -15,21 +14,22 @@ address constant ROUTER_FUJI = 0x554472a2720E5E7D5D3C817529aBA05EEd5F82D8;
 address constant LINK_FUJI = 0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846;
 
 contract DeployContracts is Script {    
-    SourceVault public sourceVault;        
+    SourceVault public sourceVault;          
 
     function run() external {
         vm.startBroadcast();        
 
         // Deploy SourceVault with required arguments
         sourceVault = new SourceVault(
+            address(ROUTER_FUJI),
+            address(LINK_FUJI),
             ERC20(address(CCIP_BNM_FUJI)),
-            "ChainlinkVault",
+            "CCIP Vault",
             "CLV",
-            address(ROUTER_FUJI), 
-            address(LINK_FUJI), 
-            address(USDT_USD_PRICE_FEED_FUJI) // Passing the price feed address
-        );   
-        
+            address(USDT_USD_PRICE_FEED_FUJI)
+             // Passing the price feed address
+        );         
+
         vm.stopBroadcast();
     }
 }

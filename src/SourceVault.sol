@@ -13,9 +13,30 @@ import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications
 import {PriceConverter} from "src/PriceConverter.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
+
 // TODO: CREATE PROPER CONTRACT DESCRIPTION
 
-contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver {
+struct Log {
+    uint256 index; // Index of the log in the block
+    uint256 timestamp; // Timestamp of the block containing the log
+    bytes32 txHash; // Hash of the transaction containing the log
+    uint256 blockNumber; // Number of the block containing the log
+    bytes32 blockHash; // Hash of the block containing the log
+    address source; // Address of the contract that emitted the log
+    bytes32[] topics; // Indexed topics of the log
+    bytes data; // Data of the log
+}
+
+interface ILogAutomation {
+    function checkLog(
+        Log calldata log,
+        bytes memory checkData
+    ) external returns (bool upkeepNeeded, bytes memory performData);
+
+    function performUpkeep(bytes calldata performData) external;
+}
+
+contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver, ILogAutomation {
 
     // STATE VARIABLES
     IERC20 private s_linkToken;
@@ -81,6 +102,7 @@ contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver {
     event TEST_TokensTransferredToDestinationVault(uint256 amount);
     event FunctionCalledBy(address caller);
     event DestinationVaultBalanceUpdated(uint256 newBalance);
+    event UpkeepExecuted(address logSender);
 
     ///CCIP specific modifiers and mappings
 
@@ -133,9 +155,7 @@ contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver {
         allowlistedSenders[_sender] = allowed;
     }
 
-    // CONSTRUCTOR
-
-    // ERC4626 FUNCTIONS
+   // ERC4626 FUNCTIONS
 
     // Deposit assets into the vault and mint shares to the user
     function _deposit(uint _assets) public {
@@ -189,16 +209,14 @@ contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver {
     /// @return messageId The ID of the CCIP message that was sent.
     
     // TODO: Keeper here
-    function sendMessagePayLINK(
+       function sendMessagePayLINK(
         uint64 _destinationChainSelector,
         address _receiver,
         string calldata _text,
         address _token,
         uint256 _amount
     )
-        external
-        onlyOwner
-        onlyAllowlistedDestinationChain(_destinationChainSelector)
+        public      
         returns (bytes32 messageId)
     {
         // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
@@ -212,10 +230,10 @@ contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver {
         );
 
         // Initialize a router client instance to interact with cross-chain router
-        IRouterClient router = IRouterClient(this.getRouter());
+        IRouterClient routerClient = IRouterClient(this.getRouter());
 
         // Get the fee required to send the CCIP message
-        uint256 fees = router.getFee(_destinationChainSelector, evm2AnyMessage);
+        uint256 fees = routerClient.getFee(_destinationChainSelector, evm2AnyMessage);
 
         if (fees > s_linkToken.balanceOf(address(this)))
             revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
@@ -227,7 +245,7 @@ contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver {
         IERC20(_token).approve(address(router), _amount);
 
         // Send the message through the router and store the returned message ID
-        messageId = router.ccipSend(_destinationChainSelector, evm2AnyMessage);
+        messageId = routerClient.ccipSend(_destinationChainSelector, evm2AnyMessage);
 
         // Emit an event with message details
         emit MessageSent(
@@ -335,9 +353,8 @@ contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver {
     }
 
     // TODO: KEEPER HERE. CHECKS LAST MESSAGE AND UPDATES MOCK BALANCE
-    function updateBalanceFromDestinationVault()
-        public
-        onlyOwner
+    function updateBalanceForDestinationVault()
+        public        
     /* TODO: onlyDestinationVault */ {
         DestinationVaultBalance = parseInt(s_lastReceivedText);
         emit DestinationVaultBalanceUpdated(DestinationVaultBalance);
@@ -360,4 +377,24 @@ contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver {
         }
         return result;
     }
+
+    function checkLog(
+        Log calldata log,
+        bytes memory
+    ) external pure returns (bool upkeepNeeded, bytes memory performData) {
+        upkeepNeeded = true;
+        address logSender = bytes32ToAddress(log.topics[1]);
+        performData = abi.encode(logSender);
+    }
+
+    function performUpkeep(bytes calldata performData) public {  
+        address logSender = abi.decode(performData, (address));            
+        updateBalanceForDestinationVault();
+        emit UpkeepExecuted(logSender);
+    }
+
+    function bytes32ToAddress(bytes32 _address) public pure returns (address) {
+        return address(uint160(uint256(_address)));
+    }   
+        
 }
