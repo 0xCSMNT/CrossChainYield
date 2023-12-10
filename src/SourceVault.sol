@@ -15,6 +15,10 @@ import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications
 //import {IMockDestinationVault} from "interfaces/IMockDestinationVault.sol";
 //import {ISourceVault} from "interfaces/ISourceVault.sol";
 
+import {PriceConverter} from "src/PriceConverter.sol";
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+
+
 // TODO: CREATE PROPER CONTRACT DESCRIPTION
 
 contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver {
@@ -29,14 +33,17 @@ contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver {
     bool public vaultLocked;
     address constant CCIP_BnM = 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05;
     address immutable router;
+    AggregatorV3Interface public priceFeed;
 
      constructor(
         address _router,
         address _link, 
-        ERC20 _asset, string memory _name, string memory _symbol
+        ERC20 _asset, string memory _name, string memory _symbol, 
+        address _priceFeed
     ) CCIPReceiver(_router) ERC4626(_asset, _name, _symbol) {
         router = _router;
         s_linkToken = IERC20(_link);
+        priceFeed = AggregatorV3Interface(_priceFeed);
     }
 
     // Mock Variables - delete before deployment
@@ -202,8 +209,10 @@ contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver {
 
     // OTHER PUBLIC FUNCTIONS
 
-    function getExchangeRate() internal pure returns (uint256) {
-        return 950000000000000000; // This represents 0.98 in fixed-point arithmetic with 18 decimal places
+    function getExchangeRate() internal view returns (uint256) {
+        uint256 price = PriceConverter.getPrice(priceFeed);
+        return price;
+         // This represents 0.98 in fixed-point arithmetic with 18 decimal places
 
         // TODO: FINISH THIS LATER TO ACCESS AN ORACLE
     }
