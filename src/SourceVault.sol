@@ -13,7 +13,6 @@ import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications
 import {PriceConverter} from "src/PriceConverter.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
-
 // TODO: CREATE PROPER CONTRACT DESCRIPTION
 
 struct Log {
@@ -37,7 +36,6 @@ interface ILogAutomation {
 }
 
 contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver, ILogAutomation {
-
     // STATE VARIABLES
     IERC20 private s_linkToken;
     address public destinationVault;
@@ -155,7 +153,7 @@ contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver, ILogAutomation {
         allowlistedSenders[_sender] = allowed;
     }
 
-   // ERC4626 FUNCTIONS
+    // ERC4626 FUNCTIONS
 
     // Deposit assets into the vault and mint shares to the user
     function _deposit(uint _assets) public {
@@ -198,70 +196,64 @@ contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver, ILogAutomation {
         return price;
     }
 
-    /// @notice Sends data and transfer tokens to receiver on the destination chain.
-    /// @notice Pay for fees in LINK.
-    /// @dev Assumes your contract has sufficient LINK to pay for CCIP fees.
-    /// @param _destinationChainSelector The identifier (aka selector) for the destination blockchain.
-    /// @param _receiver The address of the recipient on the destination blockchain.
-    /// @param _text The string data to be sent.
-    /// @param _token token address.
-    /// @param _amount token amount.
-    /// @return messageId The ID of the CCIP message that was sent.
-    
     // TODO: Keeper here
-       function sendMessagePayLINK(
-        uint64 _destinationChainSelector,
-        address _receiver,
-        string calldata _text,
-        address _token,
-        uint256 _amount
-    )
-        public      
-        returns (bytes32 messageId)
-    {
-        // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
-        // address(linkToken) means fees are paid in LINK
-        Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessage(
-            _receiver,
-            _text,
-            _token,
-            _amount,
-            address(s_linkToken)
-        );
+        
+    function sendMessagePayLINK(
+    uint64 _destinationChainSelector,
+    address _receiver,
+    string calldata _text,
+    address _token
+)
+    public      
+    returns (bytes32 messageId)
+{
+    // Determine the amount based on the balance of the asset held by the contract
+    uint256 _amount = IERC20(_token).balanceOf(address(this));
 
-        // Initialize a router client instance to interact with cross-chain router
-        IRouterClient routerClient = IRouterClient(this.getRouter());
+    // Create an EVM2AnyMessage struct in memory with necessary information for sending a cross-chain message
+    // address(linkToken) means fees are paid in LINK
+    Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessage(
+        _receiver,
+        _text,
+        _token,
+        _amount,
+        address(s_linkToken)
+    );
 
-        // Get the fee required to send the CCIP message
-        uint256 fees = routerClient.getFee(_destinationChainSelector, evm2AnyMessage);
+    // Initialize a router client instance to interact with cross-chain router
+    IRouterClient routerClient = IRouterClient(this.getRouter());
 
-        if (fees > s_linkToken.balanceOf(address(this)))
-            revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
+    // Get the fee required to send the CCIP message
+    uint256 fees = routerClient.getFee(_destinationChainSelector, evm2AnyMessage);
 
-        // approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
-        s_linkToken.approve(address(router), fees);
+    if (fees > s_linkToken.balanceOf(address(this)))
+        revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
 
-        // approve the Router to spend tokens on contract's behalf. It will spend the amount of the given token
-        IERC20(_token).approve(address(router), _amount);
+    // approve the Router to transfer LINK tokens on contract's behalf. It will spend the fees in LINK
+    s_linkToken.approve(address(router), fees);
 
-        // Send the message through the router and store the returned message ID
-        messageId = routerClient.ccipSend(_destinationChainSelector, evm2AnyMessage);
+    // approve the Router to spend tokens on contract's behalf. It will spend the amount of the given token
+    IERC20(_token).approve(address(router), _amount);
 
-        // Emit an event with message details
-        emit MessageSent(
-            messageId,
-            _destinationChainSelector,
-            _receiver,
-            _text,
-            _token,
-            _amount,
-            address(s_linkToken),
-            fees
-        );
+    // Send the message through the router and store the returned message ID
+    messageId = routerClient.ccipSend(_destinationChainSelector, evm2AnyMessage);
 
-        // Return the message ID
-        return messageId;
-    }
+    // Emit an event with message details
+    emit MessageSent(
+        messageId,
+        _destinationChainSelector,
+        _receiver,
+        _text,
+        _token,
+        _amount,
+        address(s_linkToken),
+        fees
+    );
+
+    // Return the message ID
+    return messageId;
+}
+
 
     /// @notice Construct a CCIP message.
     /// @dev This function will create an EVM2AnyMessage struct with all the necessary information for programmable tokens transfer.
@@ -354,7 +346,7 @@ contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver, ILogAutomation {
 
     // TODO: KEEPER HERE. CHECKS LAST MESSAGE AND UPDATES MOCK BALANCE
     function updateBalanceForDestinationVault()
-        public        
+        public
     /* TODO: onlyDestinationVault */ {
         DestinationVaultBalance = parseInt(s_lastReceivedText);
         emit DestinationVaultBalanceUpdated(DestinationVaultBalance);
@@ -387,14 +379,13 @@ contract SourceVault is ERC4626, OwnerIsCreator, CCIPReceiver, ILogAutomation {
         performData = abi.encode(logSender);
     }
 
-    function performUpkeep(bytes calldata performData) public {  
-        address logSender = abi.decode(performData, (address));            
+    function performUpkeep(bytes calldata performData) public {
+        address logSender = abi.decode(performData, (address));
         updateBalanceForDestinationVault();
         emit UpkeepExecuted(logSender);
     }
 
     function bytes32ToAddress(bytes32 _address) public pure returns (address) {
         return address(uint160(uint256(_address)));
-    }   
-        
+    }
 }

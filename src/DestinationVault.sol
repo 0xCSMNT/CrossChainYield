@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity ^0.8.0;
 
 import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
 import {OwnerIsCreator} from "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";
@@ -7,7 +7,27 @@ import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.s
 import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
 import {IERC20} from "@chainlink/contracts-ccip/src/v0.8/vendor/openzeppelin-solidity/v4.8.0/token/ERC20/IERC20.sol";
 
-contract DestinationVaultV2 is CCIPReceiver, OwnerIsCreator {
+struct Log {
+    uint256 index; // Index of the log in the block
+    uint256 timestamp; // Timestamp of the block containing the log
+    bytes32 txHash; // Hash of the transaction containing the log
+    uint256 blockNumber; // Number of the block containing the log
+    bytes32 blockHash; // Hash of the block containing the log
+    address source; // Address of the contract that emitted the log
+    bytes32[] topics; // Indexed topics of the log
+    bytes data; // Data of the log
+}
+
+interface ILogAutomation {
+    function checkLog(
+        Log calldata log,
+        bytes memory checkData
+    ) external returns (bool upkeepNeeded, bytes memory performData);
+
+    function performUpkeep(bytes calldata performData) external;
+}
+
+contract DestinationVaultV2 is CCIPReceiver, OwnerIsCreator, ILogAutomation {
     // Custom errors to provide more descriptive revert messages.
     error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough balance to cover the fees.
     error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
@@ -38,19 +58,24 @@ contract DestinationVaultV2 is CCIPReceiver, OwnerIsCreator {
         uint256 tokenAmount // The token amount that was transferred.
     );
 
+    event UpkeepExecuted(address logSender);
+    event swapExecuted(uint256 amountIn, uint256 amountOut);
+
     bytes32 private s_lastReceivedMessageId; // Store the last received messageId.
     address private s_lastReceivedTokenAddress; // Store the last received token address.
     uint256 private s_lastReceivedTokenAmount; // Store the last received amount.
     string private s_lastReceivedText; // Store the last received text.
-    address constant CCIP_BnM = 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05;
-    address constant CCIP_DAI = 0x0328504EC3999212d33f69a162B63d70E99D21aa;
+    IERC20 CCIP_BnM; // 0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05
+    IERC20 CCIP_DAI; // 0x0328504EC3999212d33f69a162B63d70E99D21aa;
     address private constant UNISWAP_V2_ROUTER =
         0xC532a74256D3Db42D0Bf7a0400fEFDbad7694008;
     IUniswapV2Router private uniswaprouter =
         IUniswapV2Router(UNISWAP_V2_ROUTER);
-    IERC20 private bnm = IERC20(CCIP_BnM);
-    IERC20 private dai = IERC20(CCIP_DAI);
+    // IERC20 private bnm = IERC20(CCIP_BnM);
+    // IERC20 private dai = IERC20(CCIP_DAI);
     address immutable sourceVault;
+    uint64 immutable chainId;
+        
 
     // Mapping to keep track of allowlisted destination chains.
     mapping(uint64 => bool) public allowlistedDestinationChains;
@@ -70,11 +95,13 @@ contract DestinationVaultV2 is CCIPReceiver, OwnerIsCreator {
     constructor(
         address _router,
         address _link,
-        address _sourceVault
+        address _sourceVault,
+        uint64 _chainID
     ) CCIPReceiver(_router) {
         router = _router;
         s_linkToken = IERC20(_link);
         sourceVault = _sourceVault;
+        chainId = _chainID;
     }
 
     /// @dev Modifier that checks if the chain with the given destinationChainSelector is allowlisted.
@@ -164,10 +191,10 @@ contract DestinationVaultV2 is CCIPReceiver, OwnerIsCreator {
         );
 
         // Initialize a router client instance to interact with cross-chain router
-        IRouterClient router = IRouterClient(this.getRouter());
+        IRouterClient routerClient = IRouterClient(this.getRouter());
 
         // Get the fee required to send the CCIP message
-        uint256 fees = router.getFee(_destinationChainSelector, evm2AnyMessage);
+        uint256 fees = routerClient.getFee(_destinationChainSelector, evm2AnyMessage);
 
         if (fees > s_linkToken.balanceOf(address(this)))
             revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
@@ -179,7 +206,7 @@ contract DestinationVaultV2 is CCIPReceiver, OwnerIsCreator {
         IERC20(_token).approve(address(router), _amount);
 
         // Send the message through the router and store the returned message ID
-        messageId = router.ccipSend(_destinationChainSelector, evm2AnyMessage);
+        messageId = routerClient.ccipSend(_destinationChainSelector, evm2AnyMessage);
 
         // Emit an event with message details
         emit MessageSent(
@@ -229,10 +256,10 @@ contract DestinationVaultV2 is CCIPReceiver, OwnerIsCreator {
         );
 
         // Initialize a router client instance to interact with cross-chain router
-        IRouterClient router = IRouterClient(this.getRouter());
+        IRouterClient routerClient = IRouterClient(this.getRouter());
 
         // Get the fee required to send the CCIP message
-        uint256 fees = router.getFee(_destinationChainSelector, evm2AnyMessage);
+        uint256 fees = routerClient.getFee(_destinationChainSelector, evm2AnyMessage);
 
         if (fees > address(this).balance)
             revert NotEnoughBalance(address(this).balance, fees);
@@ -241,7 +268,7 @@ contract DestinationVaultV2 is CCIPReceiver, OwnerIsCreator {
         IERC20(_token).approve(address(router), _amount);
 
         // Send the message through the router and store the returned message ID
-        messageId = router.ccipSend{value: fees}(
+        messageId = routerClient.ccipSend{value: fees}(
             _destinationChainSelector,
             evm2AnyMessage
         );
@@ -412,19 +439,19 @@ contract DestinationVaultV2 is CCIPReceiver, OwnerIsCreator {
 
     ///get Yield Asset Balance public
     function getYieldAssetBalance() public view returns (uint256) {
-        uint256 yieldAssetBalance = dai.balanceOf(address(this));
+        uint256 yieldAssetBalance = CCIP_DAI.balanceOf(address(this));
         return yieldAssetBalance;
     }
 
     ///getbaseassetbalance
     function getBaseAssetBalance() public view returns (uint256) {
-        uint256 baseAssetBalance = bnm.balanceOf(address(this));
+        uint256 baseAssetBalance = CCIP_BnM.balanceOf(address(this));
         return baseAssetBalance;
     }
 
     //// swap all the baseAssets into yield asset
     // TODO: Keeper calls to swap all the baseAssets into yield asset
-    function swapBaseBalanceToYield() external onlyOwner {
+    function swapBaseBalanceToYield() public {
         uint256 currentBaseBalance = IERC20(CCIP_BnM).balanceOf(address(this));
         _swaptoyieldasset(currentBaseBalance, 0);
     }
@@ -448,12 +475,12 @@ contract DestinationVaultV2 is CCIPReceiver, OwnerIsCreator {
         onlyRouterOrOwner
         returns (uint256 amountOut)
     {
-        bnm.approve(address(uniswaprouter), amountIn);
+        CCIP_BnM.approve(address(uniswaprouter), amountIn);
 
         address[] memory path;
         path = new address[](2);
-        path[0] = CCIP_BnM;
-        path[1] = CCIP_DAI;
+        path[0] = address(CCIP_BnM);
+        path[1] = address(CCIP_DAI);
 
         uint256[] memory amounts = uniswaprouter.swapExactTokensForTokens(
             amountIn,
@@ -463,8 +490,10 @@ contract DestinationVaultV2 is CCIPReceiver, OwnerIsCreator {
             block.timestamp
         );
 
-        // amounts[0] = WETH amount, amounts[1] = DAI amount
+        // amounts[0] = CCIP_BNM amount, amounts[1] = DAI amount
+        emit swapExecuted(amounts[0], amounts[1]);
         return amounts[1];
+        
     }
 
     ///// seperate function for this swap as we will migrate to ERC4626 deposit/withdrawals later
@@ -473,12 +502,12 @@ contract DestinationVaultV2 is CCIPReceiver, OwnerIsCreator {
         onlyRouterOrOwner
         returns (uint256 amountOut)
     {
-        dai.approve(address(uniswaprouter), amountIn);
+        CCIP_DAI.approve(address(uniswaprouter), amountIn);
 
         address[] memory path;
         path = new address[](2);
-        path[0] = CCIP_DAI;
-        path[1] = CCIP_BnM;
+        path[0] = address(CCIP_DAI);
+        path[1] = address(CCIP_BnM);
 
         uint256[] memory amounts = uniswaprouter.swapExactTokensForTokens(
             amountIn,
@@ -499,10 +528,9 @@ contract DestinationVaultV2 is CCIPReceiver, OwnerIsCreator {
     function sendYieldBalancePayLINK(
         uint64 _destinationChainSelector //,
     )
-        external
+        public
         //address _receiver,
-        //string calldata _text
-        onlyOwner
+        //string calldata _text        
         returns (bytes32 messageId)
     {
         balancetext = currentYBalancetoString();
@@ -513,10 +541,10 @@ contract DestinationVaultV2 is CCIPReceiver, OwnerIsCreator {
         );
 
         // Initialize a router client instance to interact with cross-chain router
-        IRouterClient router = IRouterClient(this.getRouter());
+        IRouterClient routerClient = IRouterClient(this.getRouter());
 
         // Get the fee required to send the CCIP message
-        uint256 fees = router.getFee(_destinationChainSelector, evm2AnyMessage);
+        uint256 fees = routerClient.getFee(_destinationChainSelector, evm2AnyMessage);
 
         if (fees > s_linkToken.balanceOf(address(this)))
             revert NotEnoughBalance(s_linkToken.balanceOf(address(this)), fees);
@@ -525,7 +553,7 @@ contract DestinationVaultV2 is CCIPReceiver, OwnerIsCreator {
         s_linkToken.approve(address(router), fees);
 
         // Send the CCIP message through the router and store the returned CCIP message ID
-        messageId = router.ccipSend(_destinationChainSelector, evm2AnyMessage);
+        messageId = routerClient.ccipSend(_destinationChainSelector, evm2AnyMessage);
 
         // Emit an event with message details
         /* emit MessageSent(
@@ -563,6 +591,32 @@ contract DestinationVaultV2 is CCIPReceiver, OwnerIsCreator {
         }
 
         return string(buffer);
+    }
+
+    function checkLog(
+        Log calldata log,
+        bytes memory
+    ) external pure returns (bool upkeepNeeded, bytes memory performData) {
+        upkeepNeeded = true;
+        address logSender = bytes32ToAddress(log.topics[1]);
+        performData = abi.encode(logSender);
+    }
+
+    function performUpkeep(bytes calldata performData) public {  
+        address logSender = abi.decode(performData, (address));
+        if (CCIP_BnM.balanceOf(address(this)) > 0) {
+            swapBaseBalanceToYield();
+        }
+        else if (CCIP_DAI.balanceOf(address(this)) > 0) {
+            // some code here
+            sendYieldBalancePayLINK(chainId);
+        }
+        emit UpkeepExecuted(logSender);            
+        
+    }
+
+    function bytes32ToAddress(bytes32 _address) public pure returns (address) {
+        return address(uint160(uint256(_address)));
     }
 }
 
